@@ -4,6 +4,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.db import models
+from django.db.models.constraints import UniqueConstraint
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -96,3 +97,41 @@ class LibraryFacultyMember(User):
         proxy = True
 
     default_user_type = User.LIBRARY_FACULTY_MEMBER
+
+
+class ClassPeriod(models.Model):
+    """Represents a class period that students could potentially sign up for."""
+
+    day_of_week = models.SmallIntegerField(_("day of week"))
+    max_student_count = models.PositiveIntegerField(_("maximum students allowed"))
+
+
+class ClassPeriodSignUp(models.Model):
+    """
+    Represents a student signing up for a specific class period. Also requires student
+    to specify if they are signing up because they have lunch or because they have study
+    hall.
+    """
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=["student", "class_period"],
+                name="unique_sign_up_class_period",
+            )
+        ]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    class_period = models.ForeignKey(ClassPeriod, on_delete=models.CASCADE)
+
+    # I could have used Django's built-in support for many-to-many relationships, but
+    # then I wouldn't be able to require the "reason" field.
+    LUNCH = "L"
+    STUDY_HALL = "S"
+
+    REASON_TYPES = [
+        (LUNCH, _("lunch")),
+        (STUDY_HALL, _("study hall")),
+    ]
+
+    reason = models.CharField(max_length=1, choices=REASON_TYPES)
