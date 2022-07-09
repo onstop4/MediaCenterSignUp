@@ -10,22 +10,24 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, **kwargs):
+    def create_user(self, email, password=None, **kwargs):
         """Creates a new user."""
         email = self.normalize_email(email)
         user = User(email=email, user_type=self.model.default_user_type, **kwargs)
+        user.set_password(password)
         user.save()
         return user
 
-    def create_superuser(self, email, **kwargs):
+    def create_superuser(self, email, password=None, **kwargs):
         """Creates a new super user."""
         email = self.normalize_email(email)
         user = User(
             email=email,
             user_type=self.model.default_user_type,
             is_superuser=True,
-            **kwargs
+            **kwargs,
         )
+        user.set_password(password)
         user.save()
         return user
 
