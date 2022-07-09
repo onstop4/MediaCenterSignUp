@@ -1,0 +1,11 @@
+{% extends "signup/base.html" %}
+
+{% block title %}Log in with Google{% endblock title %}
+
+{% block content %}
+<h1>Login Required</h1>
+<p>Please log in with your Google account by clicking the button below:</p>
+<p>
+    <a class="btn btn-primary" href="{{ authorization_url }}">Log in with Google</a>
+</p>
+{% endblock content %}

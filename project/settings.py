@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+from os import environ
 from pathlib import Path
 
 from decouple import config
@@ -25,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -137,3 +138,11 @@ AUTHENTICATION_BACKENDS = [
     "signup.auth.OAuthBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
+
+GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
+
+# Allows OAuthlib to work when HTTPS isn't an option. See https://bit.ly/3OUWd4s for
+# more info.
+if config("OAUTHLIB_INSECURE_TRANSPORT", cast=bool):
+    environ.setdefault("OAUTHLIB_INSECURE_TRANSPORT", "1")
