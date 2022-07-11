@@ -1,9 +1,17 @@
+from django import forms
 from django.db.utils import IntegrityError
-from django.test import Client, TestCase, TransactionTestCase
+from django.test import Client, TestCase, TransactionTestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 
-from signup.forms import StudentInfoForm
-from signup.models import Student, StudentInfo, student_has_info
+from signup.forms import StudentInfoForm, StudentSignUpForm
+from signup.models import (
+    ClassPeriod,
+    ClassPeriodSignUp,
+    Student,
+    StudentInfo,
+    student_has_info,
+)
 
 
 class StudentInfoFormTestCase(TransactionTestCase):
@@ -116,3 +124,132 @@ class StudentInfoViewTestCase(TestCase):
 
         StudentInfo.objects.create(student=self.student, id="123456")
         self.assertTrue(student_has_info(self.student))
+
+
+@override_settings(LUNCH_PERIODS_START=5)
+@override_settings(LUNCH_PERIODS_END=7)
+class StudentSignUpFormTestCase(TestCase):
+    """Performs tests on :class:`signup.forms.StudentSignUpForm`."""
+
+    def setUp(self):
+        now = timezone.now()
+        self.first_period = ClassPeriod(date=now, number=1, max_student_count=1)
+        ClassPeriod.objects.bulk_create(
+            [
+                self.first_period,
+                ClassPeriod(date=now, number=2, max_student_count=0),
+                ClassPeriod(date=now, number=3, max_student_count=1),
+                ClassPeriod(date=now, number=4, max_student_count=0),
+                ClassPeriod(date=now, number=5, max_student_count=1),
+                ClassPeriod(date=now, number=6, max_student_count=0),
+                ClassPeriod(date=now, number=7, max_student_count=1),
+                ClassPeriod(date=now, number=8, max_student_count=0),
+                ClassPeriod(date=now, number=9, max_student_count=1),
+            ]
+        )
+
+    def test_form_choices_for_lunch_or_study_hall(self):
+        """Tests that students are able to indicate that they are signing up for lunch
+        or for study hall for periods between `LUNCH_PERIODS_START` and
+        `LUNCH_PERIODS_END`. For the other periods, students can only indicate that they
+        are signing up because they have study hall."""
+        form = StudentSignUpForm()
+        visible_fields = form.visible_fields()
+
+        self.assertEqual(visible_fields[0].label, "Period 1")
+        self.assertTrue(isinstance(visible_fields[0].field, forms.BooleanField))
+
+        self.assertEqual(visible_fields[1].label, "Period 3")
+        self.assertTrue(isinstance(visible_fields[1].field, forms.BooleanField))
+
+        self.assertEqual(visible_fields[2].label, "Period 5")
+        self.assertTrue(isinstance(visible_fields[2].field, forms.ChoiceField))
+
+        self.assertEqual(visible_fields[3].label, "Period 7")
+        self.assertTrue(isinstance(visible_fields[3].field, forms.ChoiceField))
+
+        self.assertEqual(visible_fields[4].label, "Period 9")
+        self.assertTrue(isinstance(visible_fields[4].field, forms.BooleanField))
+
+    def test_form_choices_for_max_capacity(self):
+        """Tests that a period will not be listed on the form if it has reached
+        capacity."""
+        # Period 1 hasn't reached capacity yet, so it should still be on the form.
+        form = StudentSignUpForm()
+        visible_fields = form.visible_fields()
+        self.assertEqual(visible_fields[0].label, "Period 1")
+
+        student = Student.objects.create_user(
+            email="student@myhchs.org", password="12345"
+        )
+
+        # Period 1 has now reached capacity.
+        ClassPeriodSignUp.objects.create(
+            student=student, class_period=self.first_period
+        )
+
+        # Period 1 shouldn't be on the form now.
+        form = StudentSignUpForm()
+        visible_fields = form.visible_fields()
+        self.assertEqual(visible_fields[0].label, "Period 3")
+
+    def test_form_validation_of_field_keys(self):
+        """Tests that no parts of the form are required. Also tests that the form
+        ignores nonexistant fields."""
+
+        # Only one field filled out.
+        form = StudentSignUpForm(data={"period_1": True})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["period_1"], True)
+
+        # No fields filled out.
+        form = StudentSignUpForm(data={})
+        self.assertTrue(form.is_valid())
+
+        # Nonexistant field filled out.
+        form = StudentSignUpForm(data={"period_100": True})
+        self.assertTrue(form.is_valid())
+        self.assertIsNone(form.cleaned_data.get("period_100"))
+
+    def test_form_validation_of_field_values(self):
+        """Tests that the form correctly interprets the values of the fields."""
+        # "L" is a valid choice for a lunch+study period.
+        form = StudentSignUpForm(data={"period_5": "L"})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["period_5"], "L")
+
+        # "S" is a valid choice for a lunch+study period.
+        form = StudentSignUpForm(data={"period_7": "S"})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["period_7"], "S")
+
+        # "L" is interpreted as True for a study-only period.
+        form = StudentSignUpForm(data={"period_1": "L"})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["period_1"], True)
+
+        # "Q" is not a valid choice for a lunch+study period. Only "L", "S", and "" are
+        # valid choices.
+        form = StudentSignUpForm(data={"period_7": "Q"})
+        self.assertFalse(form.is_valid())
+
+        # True is not a valid choice for a lunch+study period. Only "L", "S", and "" are
+        # valid choices.
+        form = StudentSignUpForm(data={"period_7": True})
+        self.assertFalse(form.is_valid())
+
+        # An empty string is falsy.
+        form = StudentSignUpForm(data={"period_7": ""})
+        self.assertTrue(form.is_valid())
+        self.assertFalse(form.cleaned_data["period_7"])
+
+        # "Q" is a valid choice for a study-only period because that BooleanFields are
+        # only concerned with whether a value is truthy or falsy.
+        form = StudentSignUpForm(data={"period_1": "Q"})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["period_1"], True)
+
+        # An empty string is falsy.
+        form = StudentSignUpForm(data={"period_1": ""})
+        self.assertTrue(form.is_valid())
+        self.assertFalse(form.cleaned_data["period_1"])

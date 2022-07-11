@@ -2,10 +2,9 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
-from django.views.generic import TemplateView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, FormView
 
-from signup.forms import StudentInfoForm
+from signup.forms import StudentInfoForm, StudentSignUpForm
 from signup.google_oauth import generate_authorization_url, get_user_details
 from signup.models import student_has_info
 
@@ -56,19 +55,26 @@ class StudentNeedsInfoMixin(UserNeedsLoginMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
-class StudentSignUpFormView(StudentNeedsInfoMixin, TemplateView):
-    template_name = "signup/student_sign_up_form.html"
-
-
-class StudentInfoFormView(UserNeedsLoginMixin, CreateView):
-    template_name = "signup/student_info_form.html"
-    form_class = StudentInfoForm
-    success_url = reverse_lazy("student_sign_up_form")
+class StudentFormMixin:
+    """Ensures that a :class:`ModelForm` whose model can only be saved with a Student
+    object is saved with the currently logged-in student."""
 
     def form_valid(self, form):
         form.instance.student = self.request.user
         form.save()
         return super().form_valid(form)
+
+
+class StudentSignUpFormView(StudentNeedsInfoMixin, StudentFormMixin, FormView):
+    template_name = "signup/student_sign_up_form.html"
+    form_class = StudentSignUpForm
+    success_url = reverse_lazy("student_sign_up_success")
+
+
+class StudentInfoFormView(UserNeedsLoginMixin, StudentFormMixin, CreateView):
+    template_name = "signup/student_info_form.html"
+    form_class = StudentInfoForm
+    success_url = reverse_lazy("student_sign_up_form")
 
     def dispatch(self, request, *args, **kwargs):
         # Essentially the opposite of StudentNeedsInfoMixin. If student is authenticated

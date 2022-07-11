@@ -149,3 +149,10 @@ if config("OAUTHLIB_INSECURE_TRANSPORT", cast=bool):
     environ.setdefault("OAUTHLIB_INSECURE_TRANSPORT", "1")
 
 LOGIN_URL = "index"
+
+# Sets the first and last lunch period. Students can specify if they are going to the
+# library for lunch or for study hall during these periods. For the other class periods,
+# students can only indicate that they are signing up for library because they have a
+# study hall.
+LUNCH_PERIODS_START = 4
+LUNCH_PERIODS_END = 7

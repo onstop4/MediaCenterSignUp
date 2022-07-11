@@ -118,7 +118,16 @@ class LibraryFacultyMember(User):
 class ClassPeriod(models.Model):
     """Represents a class period that students could potentially sign up for."""
 
-    day_of_week = models.SmallIntegerField(_("day of week"))
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=["date", "number"],
+                name="unique_date_number",
+            )
+        ]
+
+    date = models.DateField(_("date"))
+    number = models.SmallIntegerField(_("period number"))
     max_student_count = models.PositiveIntegerField(_("maximum students allowed"))
 
 
@@ -137,8 +146,12 @@ class ClassPeriodSignUp(models.Model):
             )
         ]
 
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    class_period = models.ForeignKey(ClassPeriod, on_delete=models.CASCADE)
+    student = models.ForeignKey(
+        Student, on_delete=models.CASCADE, related_name="sign_ups"
+    )
+    class_period = models.ForeignKey(
+        ClassPeriod, on_delete=models.CASCADE, related_name="student_sign_ups"
+    )
 
     # I could have used Django's built-in support for many-to-many relationships, but
     # then I wouldn't be able to require the "reason" field.
