@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "crispy_forms",
 ]
 
 MIDDLEWARE = [
@@ -146,3 +147,5 @@ GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
 # more info.
 if config("OAUTHLIB_INSECURE_TRANSPORT", cast=bool):
     environ.setdefault("OAUTHLIB_INSECURE_TRANSPORT", "1")
+
+LOGIN_URL = "index"

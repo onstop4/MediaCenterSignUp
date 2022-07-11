@@ -90,8 +90,22 @@ class Student(User):
 class StudentInfo(models.Model):
     """Stores student information, such as a student's id."""
 
-    student = models.OneToOneField(Student, on_delete=models.CASCADE, primary_key=True)
-    id = models.CharField(_("student ID"), unique=True, max_length=10)
+    student = models.OneToOneField(
+        Student, on_delete=models.CASCADE, primary_key=True, related_name="info"
+    )
+    id = models.CharField(_("student ID"), unique=True, max_length=6)
+
+
+# Function could have been part of Student proxy model, but then I would have difficulty
+# casting from a User object to a Student object without an additional database call.
+def student_has_info(user):
+    """Determines if ``user`` has a corresponding :class:`StudentInfo`."""
+    try:
+        user.info
+    except StudentInfo.DoesNotExist:
+        return False
+    else:
+        return True
 
 
 class LibraryFacultyMember(User):

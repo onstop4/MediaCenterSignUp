@@ -1,9 +1,15 @@
 from django.urls import path
 
-from signup.views import google_callback, index, student_form
+from signup.views import (
+    StudentInfoFormView,
+    StudentSignUpFormView,
+    google_callback,
+    index,
+)
 
 urlpatterns = [
     path("", index, name="index"),
     path("callback/", google_callback, name="google_callback"),
-    path("s/", student_form, name="student_form"),
+    path("s/", StudentSignUpFormView.as_view(), name="student_sign_up_form"),
+    path("s/info/", StudentInfoFormView.as_view(), name="student_info_form"),
 ]
