@@ -6,7 +6,7 @@ from django.views.generic.edit import CreateView, FormView
 
 from signup.forms import StudentInfoForm, StudentSignUpForm
 from signup.google_oauth import generate_authorization_url, get_user_details
-from signup.models import student_has_info
+from signup.models import ClassPeriodSignUp, student_has_info
 
 
 def index(request):
@@ -65,12 +65,6 @@ class StudentFormMixin:
         return super().form_valid(form)
 
 
-class StudentSignUpFormView(StudentNeedsInfoMixin, StudentFormMixin, FormView):
-    template_name = "signup/student_sign_up_form.html"
-    form_class = StudentSignUpForm
-    success_url = reverse_lazy("student_sign_up_success")
-
-
 class StudentInfoFormView(UserNeedsLoginMixin, StudentFormMixin, CreateView):
     template_name = "signup/student_info_form.html"
     form_class = StudentInfoForm
@@ -85,3 +79,35 @@ class StudentInfoFormView(UserNeedsLoginMixin, StudentFormMixin, CreateView):
         if user.is_authenticated and student_has_info(user):
             return redirect(reverse("student_sign_up_form"))
         return super().dispatch(request, *args, **kwargs)
+
+
+class StudentSignUpFormView(StudentNeedsInfoMixin, FormView):
+    template_name = "signup/student_sign_up_form.html"
+    form_class = StudentSignUpForm
+    success_url = reverse_lazy("student_sign_up_success")
+
+    def form_valid(self, form):
+        for period in form.available_periods:
+            number = period.number
+            # Checks if period was part of form.
+            yes = form.data.get(f"period_{number}", False)
+            if yes:
+                # If lunch period, use student's choice. Otherwise, just use
+                # ClassPeriodSignUp.STUDY_HALL. That way, a student cannot indicate that
+                # they are using the library for a lunch period when that period isn't a
+                # lunch period.
+                if period.is_lunch_period():
+                    reason = yes
+                else:
+                    reason = ClassPeriodSignUp.STUDY_HALL
+                ClassPeriodSignUp.objects.create(
+                    student=self.request.user,
+                    class_period=period,
+                    reason=reason,
+                )
+
+        return super().form_valid(form)
+
+
+def student_sign_up_success(request):
+    return render(request, "signup/student_sign_up_success.html", {})

@@ -25,12 +25,15 @@ class StudentSignUpForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         # Gets all class periods occuring today that haven't reached student capacity
-        # yet.
-        available_periods = ClassPeriod.objects.annotate(
-            signed_up_count=Count("student_sign_ups")
-        ).filter(date=timezone.now(), signed_up_count__lt=F("max_student_count"))
+        # yet. Stores result as instance variable so it can be accessed by
+        # StudentSignUpFormView.
+        self.available_periods = (
+            ClassPeriod.objects.annotate(signed_up_count=Count("student_sign_ups"))
+            .filter(date=timezone.now(), signed_up_count__lt=F("max_student_count"))
+            .all()
+        )
 
-        for period in available_periods:
+        for period in self.available_periods:
             # Uses ChoiceField if student can sign up for lunch. Otherwise, uses
             # BooleanField.
             if (

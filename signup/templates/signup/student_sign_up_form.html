@@ -5,4 +5,9 @@
 
 {% block content %}
 <h1>Media Center Sign-Up</h1>
+<p>Please select which periods when you would like to attend the library:</p>
+<form method="post">
+    {{ form|crispy }}
+    <input class="btn btn-primary" type="submit" value="Submit">
+</form>
 {% endblock content %}

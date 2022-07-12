@@ -253,3 +253,88 @@ class StudentSignUpFormTestCase(TestCase):
         form = StudentSignUpForm(data={"period_1": ""})
         self.assertTrue(form.is_valid())
         self.assertFalse(form.cleaned_data["period_1"])
+
+
+class StudentSignUpViewTestCase(TestCase):
+    def setUp(self):
+        self.student1 = Student.objects.create_user(
+            email="student1@myhchs.org", password="12345"
+        )
+        StudentInfo.objects.create(student=self.student1, id="123456")
+        self.client.force_login(self.student1)
+
+        self.student2 = Student.objects.create_user(
+            email="student2@myhchs.org", password="12345"
+        )
+        StudentInfo.objects.create(student=self.student2, id="654321")
+
+        self.now = timezone.now()
+        ClassPeriod.objects.create(date=self.now, number=1, max_student_count=1)
+
+    def add_period_6(self):
+        """Adds a lunch period to the form. This lunch period has a max student count of
+        2."""
+        # Max student count is 2 so that I can sign up as both student1 and student2.
+        ClassPeriod.objects.create(date=self.now, number=6, max_student_count=2)
+
+    def switch_to_student2(self):
+        """Logs `self.client` in as student2."""
+        self.client.force_login(self.student2)
+
+    def test_form_submission_then_capacity_reached(self):
+        """Tests that once a period's capacity is reached, students can no longer sign
+        up for that period."""
+        response = self.client.get(reverse("student_sign_up_form"))
+        self.assertContains(response, "Period 1")
+
+        response = self.client.post(reverse("student_sign_up_form"), {"period_1": True})
+        self.assertRedirects(response, reverse("student_sign_up_success"))
+
+        self.assertEqual(ClassPeriodSignUp.objects.count(), 1)
+        response = self.client.get(reverse("student_sign_up_form"))
+        self.assertNotContains(response, "Period 1")
+
+    def test_choices(self):
+        """Tests that the "lunch" and "study hall" choices are only listed when there is
+        a lunch period on the form."""
+        # Lunch period is not on form, so "lunch" and "study hall" shouldn't be on form.
+        response = self.client.get(reverse("student_sign_up_form"))
+        self.assertNotContains(response, "Period 6")
+        # Makes all letters lowercase for consistency.
+        content = str(response.content).lower()
+        self.assertFalse("lunch" in content or "study hall" in content)
+
+        self.add_period_6()
+
+        # Lunch period is on form, so "lunch" and "study hall" should be on form.
+        response = self.client.get(reverse("student_sign_up_form"))
+        self.assertContains(response, "Period 6")
+        content = str(response.content).lower()
+        self.assertTrue("lunch" in content or "study hall" in content)
+
+    def test_form_submission_lunch_or_study_hall(self):
+        """Tests that the only accepted values for a lunch period field are "L" or "S"."""
+        self.add_period_6()
+
+        # Checks that "Q" is not accepted for a lunch period.
+        response = self.client.post(reverse("student_sign_up_form"), {"period_6": "Q"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "error")
+
+        # Checks that "L" is accepted for a lunch period.
+        response = self.client.post(reverse("student_sign_up_form"), {"period_6": "L"})
+        self.assertRedirects(response, reverse("student_sign_up_success"))
+
+        self.switch_to_student2()
+
+        # Checks that lunch period is still part of form.
+        response = self.client.get(reverse("student_sign_up_form"))
+        self.assertContains(response, "Period 6")
+
+        # Checks that "S" is accepted for a lunch period.
+        response = self.client.post(reverse("student_sign_up_form"), {"period_6": "S"})
+        self.assertRedirects(response, reverse("student_sign_up_success"))
+
+        # Checks that both form responses were accepted.
+        response = self.client.get(reverse("student_sign_up_form"))
+        self.assertNotContains(response, "Period 6")

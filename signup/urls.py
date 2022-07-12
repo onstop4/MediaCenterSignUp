@@ -5,6 +5,7 @@ from signup.views import (
     StudentSignUpFormView,
     google_callback,
     index,
+    student_sign_up_success,
 )
 
 urlpatterns = [
@@ -12,4 +13,5 @@ urlpatterns = [
     path("callback/", google_callback, name="google_callback"),
     path("s/", StudentSignUpFormView.as_view(), name="student_sign_up_form"),
     path("s/info/", StudentInfoFormView.as_view(), name="student_info_form"),
+    path("s/success/", student_sign_up_success, name="student_sign_up_success"),
 ]
