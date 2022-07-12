@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+from datetime import datetime
 from os import environ
 from pathlib import Path
 
@@ -114,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/New_York"
 
 USE_I18N = True
 
@@ -158,3 +159,18 @@ LUNCH_PERIODS_START = 4
 LUNCH_PERIODS_END = 7
 
 MAX_PERIOD_NUMBER = 9
+
+# Determines what time the form opens and what time it closes. Times must be according
+# to the time zone specified in the TIME_ZONE variable above. Tiem values in config file
+# must be in the "hour:minute" format (based on 24-hour clock).
+SIGN_UP_FORM_OPENS_TIME = datetime.strptime(
+    config("SIGN_UP_FORM_OPENS_TIME"), "%H:%M"
+).time()
+
+SIGN_UP_FORM_CLOSES_TIME = datetime.strptime(
+    config("SIGN_UP_FORM_CLOSES_TIME"), "%H:%M"
+).time()
+
+# Keeps form open regardless of the values of SIGN_UP_FORM_OPENS_TIME and
+# SIGN_UP_FORM_CLOSES_TIME.
+FORCE_OPEN_SIGN_UP_FORM = config("FORCE_OPEN_SIGN_UP_FORM", cast=bool, default=False)

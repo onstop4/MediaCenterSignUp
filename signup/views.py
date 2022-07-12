@@ -1,7 +1,9 @@
+from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.views.generic.edit import CreateView, FormView
 
 from signup.forms import StudentInfoForm, StudentSignUpForm
@@ -81,7 +83,36 @@ class StudentInfoFormView(UserNeedsLoginMixin, StudentFormMixin, CreateView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class StudentSignUpFormView(StudentNeedsInfoMixin, FormView):
+class StudentSignUpOpenMixin:
+    """Only allows request to complete normally if form is open depending on the values
+    of ``SIGN_UP_FORM_OPENS_TIME``, ``SIGN_UP_FORM_CLOSES_TIME``, and
+    ``FORCE_OPEN_SIGN_UP_FORM`` in the project settings."""
+
+    def is_open(self) -> bool:
+        """Determines if the form is open now according to the values of
+        ``SIGN_UP_FORM_OPENS_TIME`` and ``SIGN_UP_FORM_CLOSES_TIME`` in the project
+        settings."""
+        time_now_naive = timezone.localtime(timezone.now()).time()
+        return (
+            settings.SIGN_UP_FORM_OPENS_TIME
+            <= time_now_naive
+            < settings.SIGN_UP_FORM_CLOSES_TIME
+        )
+
+    def dispatch(self, request, *args, **kwargs):
+        if settings.FORCE_OPEN_SIGN_UP_FORM or self.is_open():
+            return super().dispatch(request, *args, **kwargs)
+        return render(
+            request,
+            "signup/student_sign_up_form_closed.html",
+            {
+                "form_time_opens": settings.SIGN_UP_FORM_OPENS_TIME,
+                "form_time_closes": settings.SIGN_UP_FORM_CLOSES_TIME,
+            },
+        )
+
+
+class StudentSignUpFormView(StudentNeedsInfoMixin, StudentSignUpOpenMixin, FormView):
     template_name = "signup/student_sign_up_form.html"
     success_url = reverse_lazy("student_sign_up_success")
 
