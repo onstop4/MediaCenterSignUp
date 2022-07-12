@@ -156,6 +156,7 @@ class ClassPeriodSignUp(models.Model):
     class_period = models.ForeignKey(
         ClassPeriod, on_delete=models.CASCADE, related_name="student_sign_ups"
     )
+    date = models.DateTimeField(_("date signed up"), default=timezone.now)
 
     # I could have used Django's built-in support for many-to-many relationships, but
     # then I wouldn't be able to require the "reason" field.
