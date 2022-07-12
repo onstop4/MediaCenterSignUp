@@ -83,8 +83,10 @@ class StudentInfoFormView(UserNeedsLoginMixin, StudentFormMixin, CreateView):
 
 class StudentSignUpFormView(StudentNeedsInfoMixin, FormView):
     template_name = "signup/student_sign_up_form.html"
-    form_class = StudentSignUpForm
     success_url = reverse_lazy("student_sign_up_success")
+
+    def get_form(self, form_class=None):
+        return StudentSignUpForm(student=self.request.user, **self.get_form_kwargs())
 
     def form_valid(self, form):
         for period in form.available_periods:

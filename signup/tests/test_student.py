@@ -126,8 +126,7 @@ class StudentInfoViewTestCase(TestCase):
         self.assertTrue(student_has_info(self.student))
 
 
-@override_settings(LUNCH_PERIODS_START=5)
-@override_settings(LUNCH_PERIODS_END=7)
+@override_settings(LUNCH_PERIODS_START=5, LUNCH_PERIODS_END=7)
 class StudentSignUpFormTestCase(TestCase):
     """Performs tests on :class:`signup.forms.StudentSignUpForm`."""
 
@@ -254,7 +253,29 @@ class StudentSignUpFormTestCase(TestCase):
         self.assertTrue(form.is_valid())
         self.assertFalse(form.cleaned_data["period_1"])
 
+    def test_student_already_signed_up_for_period(self):
+        """Tests that the form does not list periods that the logged-in student has
+        already signed up for. Also tests that said student cannot sign up for a period
+        that they already signed up for."""
+        student = Student.objects.create(email="student@myhchs.org", password="12345")
 
+        # Tests that first period is still listed.
+        form = StudentSignUpForm(student=student)
+        self.assertEqual(form.visible_fields()[0].label, "Period 1")
+
+        # Student signs up for first period.
+        ClassPeriodSignUp.objects.create(
+            student=student,
+            class_period=self.first_period,
+            reason=ClassPeriodSignUp.STUDY_HALL,
+        )
+
+        # First period is no longer listed on the form.
+        form = StudentSignUpForm(student=student)
+        self.assertEqual(form.visible_fields()[0].label, "Period 3")
+
+
+@override_settings(LUNCH_PERIODS_START=5, LUNCH_PERIODS_END=7)
 class StudentSignUpViewTestCase(TestCase):
     def setUp(self):
         self.student1 = Student.objects.create_user(
@@ -336,5 +357,33 @@ class StudentSignUpViewTestCase(TestCase):
         self.assertRedirects(response, reverse("student_sign_up_success"))
 
         # Checks that both form responses were accepted.
+        response = self.client.get(reverse("student_sign_up_form"))
+        self.assertNotContains(response, "Period 6")
+
+    def test_student_already_signed_up_for_period(self):
+        """Tests that the form does not list periods that the logged-in student has
+        already signed up for. Also tests that said student cannot sign up for a period
+        that they already signed up for."""
+        self.add_period_6()
+
+        # Signing up for lunch period as student1.
+        response = self.client.post(reverse("student_sign_up_form"), {"period_6": "L"})
+        self.assertRedirects(response, reverse("student_sign_up_success"))
+
+        # Form does not contain lunch period for student1.
+        response = self.client.get(reverse("student_sign_up_form"))
+        self.assertNotContains(response, "Period 6")
+
+        self.switch_to_student2()
+
+        # Form contains lunch period for student2.
+        response = self.client.get(reverse("student_sign_up_form"))
+        self.assertContains(response, "Period 6")
+
+        # Signing up for lunch period as student2.
+        response = self.client.post(reverse("student_sign_up_form"), {"period_6": "L"})
+        self.assertRedirects(response, reverse("student_sign_up_success"))
+
+        # Form does not contain lunch period for student2.
         response = self.client.get(reverse("student_sign_up_form"))
         self.assertNotContains(response, "Period 6")

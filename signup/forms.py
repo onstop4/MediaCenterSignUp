@@ -21,17 +21,26 @@ class StudentInfoForm(forms.ModelForm):
 
 
 class StudentSignUpForm(forms.Form):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, student=None, **kwargs):
         super().__init__(*args, **kwargs)
+
+        now = timezone.now()
 
         # Gets all class periods occuring today that haven't reached student capacity
         # yet. Stores result as instance variable so it can be accessed by
         # StudentSignUpFormView.
-        self.available_periods = (
-            ClassPeriod.objects.annotate(signed_up_count=Count("student_sign_ups"))
-            .filter(date=timezone.now(), signed_up_count__lt=F("max_student_count"))
-            .all()
-        )
+        self.available_periods = ClassPeriod.objects.annotate(
+            signed_up_count=Count("student_sign_ups")
+        ).filter(date=now, signed_up_count__lt=F("max_student_count"))
+
+        # Excludes periods that the student has already signed up for.
+        if student:
+            signed_up_already = student.sign_ups.filter(class_period__date=now)
+            self.available_periods = self.available_periods.exclude(
+                student_sign_ups__in=signed_up_already
+            )
+
+        self.available_periods = self.available_periods.all()
 
         for period in self.available_periods:
             # Uses ChoiceField if student can sign up for lunch. Otherwise, uses
