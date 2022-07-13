@@ -4,11 +4,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView, FormView
 
 from signup.forms import StudentInfoForm, StudentSignUpForm
 from signup.google_oauth import generate_authorization_url, get_user_details
-from signup.models import ClassPeriodSignUp, student_has_info
+from signup.models import ClassPeriod, ClassPeriodSignUp, student_has_info
 
 
 def index(request):
@@ -142,5 +143,17 @@ class StudentSignUpFormView(StudentNeedsInfoMixin, StudentSignUpOpenMixin, FormV
         return super().form_valid(form)
 
 
-def student_sign_up_success(request):
-    return render(request, "signup/student_sign_up_success.html", {})
+class StudentSignUpSuccessView(StudentNeedsInfoMixin, TemplateView):
+    template_name = "signup/student_sign_up_success.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        student = self.request.user
+        today = timezone.now()
+
+        # Allows template to list all the periods that the student signed up for today.
+        context["periods"] = ClassPeriod.objects.filter(
+            student_sign_ups__student=student, student_sign_ups__date__date=today
+        ).all()
+
+        return context

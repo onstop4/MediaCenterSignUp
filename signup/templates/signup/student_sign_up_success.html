@@ -3,6 +3,21 @@
 {% block title %}Success{% endblock title %}
 
 {% block content %}
+<style>
+    ul {
+        list-style-type: none;
+    }
+</style>
+
 <h1>Sign-Up Successful</h1>
-You have successfully signed up for the class periods you chose.
+{% if periods %}
+You have successfully signed up to use the Media Center during the following class periods:
+<ul>
+    {% for period in periods %}
+    <li>Period {{ period.number }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+You have successfully signed up to use the Media Center.
+{% endif %}
 {% endblock content %}

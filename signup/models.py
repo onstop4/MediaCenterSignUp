@@ -116,8 +116,15 @@ class LibraryFacultyMember(User):
     default_user_type = User.LIBRARY_FACULTY_MEMBER
 
 
+class ClassPeriodManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().order_by("number")
+
+
 class ClassPeriod(models.Model):
     """Represents a class period that students could potentially sign up for."""
+
+    objects = ClassPeriodManager()
 
     class Meta:
         constraints = [

@@ -426,3 +426,55 @@ class StudentSignUpViewTestCase(TestCase):
             ):
                 response = self.client.get(reverse("student_sign_up_form"))
                 self.assertContains(response, "Closed")
+
+
+@override_settings(FORCE_OPEN_SIGN_UP_FORM=True)
+class StudentSignUpSuccessViewTestCase(TestCase):
+    """Performs tests on :class:`signup.forms.StudentSignUpSuccessView`. This includes
+    testing that it lists all the periods that the student signed up for today."""
+
+    def setUp(self):
+        student = Student.objects.create(email="student@myhchs.org", password="12345")
+        StudentInfo.objects.create(student=student, id="123456")
+        self.client.force_login(student)
+
+        now = timezone.now()
+        ClassPeriod.objects.bulk_create(
+            [
+                ClassPeriod(date=now, number=1, max_student_count=1),
+                ClassPeriod(date=now, number=2, max_student_count=1),
+            ]
+        )
+
+    def test_without_submission(self):
+        """Tests that no periods are listed when the student hasn't signed up for any."""
+        response = self.client.get(reverse("student_sign_up_success"))
+        self.assertContains(response, "Media Center.")
+        self.assertNotContains(response, "Period")
+
+    def test_with_submission(self):
+        """Tests that all of the periods that the student signed up for are listed."""
+        # Checks what happens when the student only signs up for one period.
+        response = self.client.post(
+            reverse("student_sign_up_form"), {"period_1": True}, follow=True
+        )
+        self.assertRedirects(response, reverse("student_sign_up_success"))
+        self.assertContains(response, "following class periods:")
+        self.assertContains(response, "Period 1")
+        self.assertNotContains(response, "Period 2")
+
+        # Checks what happens when the student has signed up for two periods in total.
+        response = self.client.post(
+            reverse("student_sign_up_form"), {"period_2": True}, follow=True
+        )
+        self.assertRedirects(response, reverse("student_sign_up_success"))
+        self.assertContains(response, "following class periods:")
+        self.assertContains(response, "Period 1")
+        self.assertContains(response, "Period 2")
+
+        # Checks that all the periods that the student signed up for are listed on the
+        # page.
+        response = self.client.get(reverse("student_sign_up_success"))
+        self.assertContains(response, "following class periods:")
+        self.assertContains(response, "Period 1")
+        self.assertContains(response, "Period 2")
