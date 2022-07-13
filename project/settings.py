@@ -36,6 +36,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "signup.apps.SignupConfig",
+    "signup.faculty.apps.FacultyConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
