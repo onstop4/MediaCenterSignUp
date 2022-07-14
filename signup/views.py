@@ -4,8 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.views.generic import TemplateView
-from django.views.generic.edit import CreateView, FormView
+from django.views.generic import CreateView, FormView, TemplateView
 
 from signup.forms import StudentInfoForm, StudentSignUpForm
 from signup.google_oauth import generate_authorization_url, get_user_details
