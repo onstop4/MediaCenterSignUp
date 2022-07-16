@@ -120,6 +120,9 @@ class ClassPeriodManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by("number")
 
+    def get_queryset_unordered(self):
+        return super().get_queryset()
+
 
 class ClassPeriod(models.Model):
     """Represents a class period that students could potentially sign up for."""

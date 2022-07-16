@@ -1,0 +1,33 @@
+{% extends "faculty/base.html" %}
+
+{% block title %}Class Periods in the {% if future %}Future{% else %}Past{% endif %}{% endblock title %}
+
+{% block content %}
+<h1>Class Periods {% if future %}Today and in the Future{% else %}in the Past{% endif %}</h1>
+<div class="container">
+    <div class="row">
+        <div class="col">Date</div>
+
+        {% for number in period_numbers %}
+        <div class="col">{{ number }}</div>
+        {% endfor %}
+
+        {% if future %}
+        <div class="col"></div>
+        {% endif %}
+    </div>
+    {% for date, periods in periods_grouped %}
+    <div class="row">
+        <div class="col">{% if date == date_today %}<span class="fw-bold">Today</span> - {% endif %}{{ date|date:"l, F j, Y" }}</div>
+
+        {% for period in periods %}
+        <div class="col">{{ period.max_student_count }}</div>
+        {% endfor %}
+
+        {% if future %}
+        <div class="col"><a href="{% url 'future_class_periods_existing' date %}">Edit</a></div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock content %}

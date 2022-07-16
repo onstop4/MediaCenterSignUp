@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.urls import path, register_converter
 
-from signup.faculty.views import FutureClassPeriodsFormView, FutureClassPeriodsListView
+from signup.faculty.views import ClassPeriodsListView, FutureClassPeriodsFormView
 
 
 # Adapted from https://stackoverflow.com/a/61134265.
@@ -23,7 +23,7 @@ register_converter(DateConverter, "date")
 urlpatterns = [
     path(
         "future/",
-        FutureClassPeriodsListView.as_view(),
+        ClassPeriodsListView.as_view(),
         name="future_class_periods_list",
     ),
     path(
@@ -35,5 +35,10 @@ urlpatterns = [
         "future/<date>/",
         FutureClassPeriodsFormView.as_view(),
         name="future_class_periods_existing",
+    ),
+    path(
+        "past/",
+        ClassPeriodsListView.as_view(future=False),
+        name="past_class_periods_list",
     ),
 ]
