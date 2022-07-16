@@ -152,7 +152,8 @@ class StudentSignUpSuccessView(StudentNeedsInfoMixin, TemplateView):
 
         # Allows template to list all the periods that the student signed up for today.
         context["periods"] = ClassPeriod.objects.filter(
-            student_sign_ups__student=student, student_sign_ups__date__date=today
+            student_sign_ups__student=student,
+            student_sign_ups__date_signed_up__date=today,
         ).all()
 
         return context

@@ -166,7 +166,7 @@ class ClassPeriodSignUp(models.Model):
     class_period = models.ForeignKey(
         ClassPeriod, on_delete=models.CASCADE, related_name="student_sign_ups"
     )
-    date = models.DateTimeField(_("date signed up"), default=timezone.now)
+    date_signed_up = models.DateTimeField(_("date signed up"), default=timezone.now)
 
     # I could have used Django's built-in support for many-to-many relationships, but
     # then I wouldn't be able to require the "reason" field.
@@ -179,3 +179,9 @@ class ClassPeriodSignUp(models.Model):
     ]
 
     reason = models.CharField(max_length=1, choices=REASON_TYPES)
+
+    # Allows library faculty to confirm that a student showed up to the library.
+    attendance_confirmed = models.BooleanField(_("attendance confirmed"), default=False)
+    date_attendance_confirmed = models.DateTimeField(
+        _("date attendance was confirmed"), null=True
+    )
