@@ -1,14 +1,9 @@
 from django.test import TestCase
 from django.utils import timezone
 
-from signup.faculty.serializers import ClassPeriodSignUpSerializer
+from signup.faculty.api.serializers import ClassPeriodSignUpSerializer
+from signup.faculty.tests.common import convert_datetime
 from signup.models import ClassPeriod, ClassPeriodSignUp, Student, StudentInfo
-
-
-def convert_datetime(datetime_obj):
-    """Converts datetime object into a form similar to the one used by Django REST
-    Framework when it serializes datetime objects."""
-    return str(timezone.localtime(datetime_obj)).replace(" ", "T")
 
 
 class ClassPeriodSignUpSerializerTestCase(TestCase):

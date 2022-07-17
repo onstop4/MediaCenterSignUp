@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.urls import path, register_converter
+from django.urls import include, path, register_converter
 
 from signup.faculty.views import ClassPeriodsListView, FutureClassPeriodsFormView
 
@@ -41,4 +41,6 @@ urlpatterns = [
         ClassPeriodsListView.as_view(future=False),
         name="past_class_periods_list",
     ),
+    # API urls.
+    path("api/", include("signup.faculty.api.urls")),
 ]
