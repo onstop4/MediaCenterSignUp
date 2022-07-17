@@ -1,3 +1,5 @@
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
 
 from signup.faculty.api.serializers import ClassPeriodSignUpSerializer
@@ -13,7 +15,18 @@ class ClassPeriodSignUpMixin:
 
 
 class ClassPeriodSignUpListAPIView(ClassPeriodSignUpMixin, ListAPIView):
-    pass
+    filter_backends = [SearchFilter, DjangoFilterBackend]
+    filterset_fields = [
+        "id",
+        "class_period__number",
+        "student__name",
+        "student__id",
+        "date_signed_up",
+        "reason",
+        "attendance_confirmed",
+        "date_attendance_confirmed",
+    ]
+    search_fields = ["student__name"]
 
 
 class ClassPeriodSignUpDetailAPIView(

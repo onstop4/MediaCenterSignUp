@@ -12,11 +12,11 @@ from signup.models import (
 )
 
 
-class ClassPeriodSignUpAPIViewsTestCase(APITestCase):
-    """Performs tests on :class:`signup.faculty.views.ClassPeriodSignUpListAPIView` and
-    :class:`signup.faculty.views.ClassPeriodSignUpDetailAPIView`."""
+class CommonTestLogicMixin:
+    """Contains common logic for testing views in :mod:`signup.faculty.api.views`."""
 
     def setUp(self):
+        # pylint: disable=invalid-name
         student1 = Student.objects.create_user(
             email="student1@myhchs.org", password="12345", name="Student1"
         )
@@ -57,9 +57,13 @@ class ClassPeriodSignUpAPIViewsTestCase(APITestCase):
             ]
         )
 
-    def test_listing_periods(self):
+
+class ClassPeriodSignUpListAPIViewTestCase(CommonTestLogicMixin, APITestCase):
+    """Performs tests on :class:`signup.faculty.views.ClassPeriodSignUpListAPIView`."""
+
+    def test_listing_periods_without_filtering(self):
         """Tests listing ClassPeriodSignUps by performing a GET request on
-        ``api_periods_list``."""
+        ``api_periods_list``. Performs no filtering."""
         response = self.client.get(reverse("api_periods_list"))
         self.assertEqual(response.status_code, 200)
         self.assertListEqual(
@@ -87,6 +91,80 @@ class ClassPeriodSignUpAPIViewsTestCase(APITestCase):
                 },
             ],
         )
+
+    def test_listing_periods_with_filtering(self):
+        """Tests listing ClassPeriodSignUps by performing a GET request on
+        ``api_periods_list`` with url query parameters for filtering."""
+        # Tests the DjangoFilterBackend filter backend.
+        url = (
+            reverse("api_periods_list")
+            + f"?id={self.signup2.id}&class_period__number=1&student__name=Student2"
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertListEqual(
+            response.data,
+            [
+                {
+                    "id": self.signup2.id,
+                    "period_number": 1,
+                    "student_name": "Student2",
+                    "student_id": "654321",
+                    "date_signed_up": convert_datetime(self.now),
+                    "reason": ClassPeriodSignUp.STUDY_HALL,
+                    "attendance_confirmed": False,
+                    "date_attendance_confirmed": None,
+                }
+            ],
+        )
+
+        # Tests the SearchFilter filter backend.
+        url = reverse("api_periods_list") + "?search=Student2"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertListEqual(
+            response.data,
+            [
+                {
+                    "id": self.signup2.id,
+                    "period_number": 1,
+                    "student_name": "Student2",
+                    "student_id": "654321",
+                    "date_signed_up": convert_datetime(self.now),
+                    "reason": ClassPeriodSignUp.STUDY_HALL,
+                    "attendance_confirmed": False,
+                    "date_attendance_confirmed": None,
+                }
+            ],
+        )
+
+        # Tests both filter backends together.
+        url = (
+            reverse("api_periods_list")
+            + f"?id={self.signup2.id}&class_period__number=1&student__name=Student2&search=Student2"
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertListEqual(
+            response.data,
+            [
+                {
+                    "id": self.signup2.id,
+                    "period_number": 1,
+                    "student_name": "Student2",
+                    "student_id": "654321",
+                    "date_signed_up": convert_datetime(self.now),
+                    "reason": ClassPeriodSignUp.STUDY_HALL,
+                    "attendance_confirmed": False,
+                    "date_attendance_confirmed": None,
+                }
+            ],
+        )
+
+
+class ClassPeriodSignUpDetailAPIViewTestCase(CommonTestLogicMixin, APITestCase):
+    """Performs tests on
+    :class:`signup.faculty.views.ClassPeriodSignUpDetailAPIView`."""
 
     def test_retrieving_period(self):
         """Tests getting info on a single ClassPeriodSignUp by performing a GET request
