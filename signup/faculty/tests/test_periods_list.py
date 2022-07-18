@@ -17,6 +17,8 @@ class ClassPeriodsListTestCase(TestCase):
         )
         self.client.force_login(self.library_faculty_member)
 
+    def create_periods(self):
+        """Creates ClassPeriods for today, tomorrow, and yesterday."""
         date = timezone.now()
 
         # Creates 3 ClassPeriods for today, 3 for tomorrow, and 3 for yesterday.
@@ -47,7 +49,18 @@ class ClassPeriodsListTestCase(TestCase):
         )
 
     def test_list_future_periods(self):
-        """Tests listing max student counts for today and in the future."""
+        """Tests listing max student counts for class periods today and in the
+        future."""
+        # Checks that special message is displayed when there are no periods to display.
+        response = self.client.get(reverse("future_class_periods_list"))
+        self.assertContains(response, "no class periods to display")
+        self.assertContains(response, "See past class periods")
+
+        # Checks that the right buttons are displayed.
+        self.assertContains(response, "Plan for new day")
+
+        self.create_periods()
+
         response = self.client.get(reverse("future_class_periods_list"))
 
         # Checks that the list contains periods of today and in the future. The
@@ -70,7 +83,17 @@ class ClassPeriodsListTestCase(TestCase):
         self.assertNotContains(response, ">8")
 
     def test_list_past_periods(self):
-        """Tests listing max student counts for days in the past."""
+        """Tests listing max student counts for class periods in the past."""
+        # Checks that special message is displayed when there are no periods to display.
+        response = self.client.get(reverse("past_class_periods_list"))
+        self.assertContains(response, "no class periods to display")
+
+        # Checks that the right buttons are displayed.
+        self.assertNotContains(response, "Plan for new day")
+        self.assertContains(response, "See class periods today and in the future")
+
+        self.create_periods()
+
         response = self.client.get(reverse("past_class_periods_list"))
 
         # Checks that the list contains periods of the past. The greater-than sign must

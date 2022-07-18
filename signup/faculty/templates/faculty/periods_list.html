@@ -4,6 +4,14 @@
 
 {% block content %}
 <h1>Class Periods {% if future %}Today and in the Future{% else %}in the Past{% endif %}</h1>
+{% if future %}
+<a class="btn btn-primary" href="{% url 'future_class_periods_new' %}">Plan for new day</a>
+<a class="btn btn-primary" href="{% url 'past_class_periods_list' %}">See past class periods</a>
+{% else %}
+<a class="btn btn-primary" href="{% url 'future_class_periods_list' %}">See class periods today and in the future</a>
+{% endif %}
+
+{% if periods_grouped %}
 <div class="container">
     <div class="row">
         <div class="col">Date</div>
@@ -30,4 +38,7 @@
     </div>
     {% endfor %}
 </div>
+{% else %}
+<p>There are no class periods to display here.</p>
+{% endif %}
 {% endblock content %}
