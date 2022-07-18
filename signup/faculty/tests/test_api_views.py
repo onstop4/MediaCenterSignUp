@@ -153,10 +153,11 @@ class ClassPeriodSignUpListAPIViewTestCase(CommonTestLogicMixin, APITestCase):
             ],
         )
 
-        # Tests both filter backends together.
+        # Tests multiple filter backends together (in this case, DjangoFilterBackend and
+        # OrderingFilter).
         url = (
             reverse("api_periods_list")
-            + f"?id={self.signup2.id}&class_period__number=1&student__name=Student2&search=Student2"
+            + "?class_period__number=1&ordering=-student__name"
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -172,7 +173,17 @@ class ClassPeriodSignUpListAPIViewTestCase(CommonTestLogicMixin, APITestCase):
                     "reason": ClassPeriodSignUp.STUDY_HALL,
                     "attendance_confirmed": False,
                     "date_attendance_confirmed": None,
-                }
+                },
+                {
+                    "id": self.signup1.id,
+                    "period_number": 1,
+                    "student_name": "Student1",
+                    "student_id": "123456",
+                    "date_signed_up": convert_datetime(self.now),
+                    "reason": ClassPeriodSignUp.STUDY_HALL,
+                    "attendance_confirmed": False,
+                    "date_attendance_confirmed": None,
+                },
             ],
         )
 
