@@ -7,9 +7,9 @@ from signup.faculty.api.views import (
 )
 
 urlpatterns = [
-    path("periods/", ClassPeriodSignUpListAPIView.as_view(), name="api_periods_list"),
+    path("signups/", ClassPeriodSignUpListAPIView.as_view(), name="api_periods_list"),
     path(
-        "periods/<int:pk>/", ClassPeriodSignUpDetailAPIView.as_view(), name="api_period"
+        "signups/<int:pk>/", ClassPeriodSignUpDetailAPIView.as_view(), name="api_period"
     ),
 ]
 

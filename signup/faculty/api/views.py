@@ -26,6 +26,7 @@ class ClassPeriodSignUpListAPIView(ClassPeriodSignUpMixin, ListAPIView):
     filterset_fields = ordering_fields = [
         "id",
         "class_period__number",
+        "class_period__date",
         "student__name",
         "student__id",
         "date_signed_up",

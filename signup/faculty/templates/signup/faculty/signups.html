@@ -1,0 +1,110 @@
+{% extends 'signup/faculty/base.html' %}
+{% load static %}
+
+{% block title %}Sign-Ups{% endblock title %}
+
+{% block resources %}
+{{ block.super }}
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+{% if DEBUG %}
+<script src="https://unpkg.com/vue@3.2"></script>
+{% else %}
+<script src="https://unpkg.com/vue@3.2/dist/vue.global.prod.js"></script>
+{% endif %}
+
+{{ script_data|json_script:"script_data" }}
+{% endblock resources %}
+
+{% block content %}
+{% verbatim %}
+<div id="app">
+    <h2>Sign-Ups on {{ readableDateFilter }}</h2>
+    <button type="button" class="btn btn-primary" @click.stop="showFilterModal = true">Edit Filters</button>
+    <div v-if="moreThanDateFilterActive">
+        <h4>Filtering By:</h4>
+        <ul>
+            <li v-if="periodNumberInputChecked">Period {{ filters.periodNumber }}</li>
+            <li v-if="filters.studentName">Student with name "{{ filters.studentName }}"</li>
+            <li v-if="filters.studentId">Student with ID {{ filters.studentId }}</li>
+            <li v-if="filters.reason">Reason for signing up is {{ readableReasonFilter }}</li>
+        </ul>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col" @click="sort('class_period__number')">Period Number</th>
+                <th scope="col" @click="sort('student__name')">Student Name</th>
+                <th scope="col" @click="sort('student__id')">Student ID</th>
+                <th scope="col" @click="sort('reason')">Reason</th>
+                <th scope="col" @click="sort('attendance_confirmed')">Confirm Attendance</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="signup in signups" :key="signup.id">
+                <td>{{ signup.period_number }}</td>
+                <td>{{ signup.student_name }}</td>
+                <td>{{ signup.student_id }}</td>
+                <td>{{ signup.reason }}</td>
+                <td @click.stop="confirmAttendance(signup.id, !signup.attendance_confirmed)"><span v-if="signup.attendance_confirmed">✔</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="modal" tabindex="-1" style="display: block;" v-if="showFilterModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Filters</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="dateInput" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="dateInput" placeholder="YYYY-MM-DD" v-model="stringDateFilter">
+                    </div>
+
+                    <div class="form-check">
+                        <label for="periodNumberInputCheckbox" class="form-check-label">Filter by class period?</label>
+                        <input type="checkbox" class="form-check-input" id="periodNumberInputCheckbox" v-model="periodNumberInputChecked">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="periodNumberInput" class="form-label">Class period number</label>
+                        <input type="number" class="form-control" id="periodNumberInput" min="1" v-model="filterInputs.periodNumber" :disabled="!periodNumberInputChecked">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="studentNameInput" class="form-label">Student name (full name not needed)</label>
+                        <input type="text" class="form-control" id="studentNameInput" v-model="filterInputs.studentName">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="studentIdInput" class="form-label">Student ID</label>
+                        <input type="text" class="form-control" id="studentIdInput" v-model="filterInputs.studentId">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reasonSelect" class="form-label">Reason for signing up</label>
+                        <select class="form-select" id="reasonSelect" v-model="filterInputs.reason">
+                            <option value="" selected>Don't filter</option>
+                            <option value="L">Lunch</option>
+                            <option value="S">Study hall</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click.stop="cancelFilterEditing">Cancel</button>
+                    <button type="button" class="btn btn-primary" @click.stop="saveFilters">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop show" v-if="showFilterModal"></div>
+</div>
+
+</div>
+{% endverbatim %}
+
+<script src="{% static 'signup/faculty/signups.js' %}"></script>
+{% endblock content %}

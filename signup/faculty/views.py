@@ -2,9 +2,9 @@ from itertools import groupby
 
 from django.conf import settings
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.views.generic import FormView, ListView
+from django.views.generic import FormView, ListView, TemplateView
 
 from signup.faculty.forms import FutureClassPeriodsForm
 from signup.models import ClassPeriod, is_library_faculty_member
@@ -22,7 +22,7 @@ class UserIsLibraryFacultyMemberMixin(UserPassesTestMixin):
 
 
 class ClassPeriodsListView(UserIsLibraryFacultyMemberMixin, ListView):
-    template_name = "faculty/periods_list.html"
+    template_name = "signup/faculty/periods_list.html"
     context_object_name = "periods_grouped"
     future = True
 
@@ -77,7 +77,7 @@ class ClassPeriodsListView(UserIsLibraryFacultyMemberMixin, ListView):
 
 
 class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
-    template_name = "faculty/future_periods_form.html"
+    template_name = "signup/faculty/future_periods_form.html"
     form_class = FutureClassPeriodsForm
     success_url = reverse_lazy("future_class_periods_list")
 
@@ -118,3 +118,24 @@ class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
         ClassPeriod.objects.bulk_create(periods)
 
         return super().form_valid(form)
+
+
+class SignUpsView(UserIsLibraryFacultyMemberMixin, TemplateView):
+    template_name = "signup/faculty/signups.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context |= {
+            "DEBUG": settings.DEBUG,
+            "script_data": {
+                "listURL": reverse("api_periods_list"),
+                # I can't use reverse("api_period") because api_period requires an
+                # argument.
+                "individualURL": "/f/api/signups/",
+                "default_date": timezone.now(),
+                "default_sort": "student__name",
+            },
+        }
+
+        return context
