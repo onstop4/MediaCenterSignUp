@@ -116,6 +116,11 @@ class LibraryFacultyMember(User):
     default_user_type = User.LIBRARY_FACULTY_MEMBER
 
 
+def is_library_faculty_member(user):
+    """Determines if ``user`` is a library faculty member."""
+    return user.is_authenticated and user.user_type == User.LIBRARY_FACULTY_MEMBER
+
+
 class ClassPeriodManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by("number")

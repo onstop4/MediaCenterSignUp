@@ -1,6 +1,6 @@
 from django.urls import reverse
 from django.utils import timezone
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient, APITestCase
 
 from signup.faculty.tests.common import convert_datetime
 from signup.models import (
@@ -17,15 +17,15 @@ class CommonTestLogicMixin:
 
     def setUp(self):
         # pylint: disable=invalid-name
-        student1 = Student.objects.create_user(
+        self.student1 = Student.objects.create_user(
             email="student1@myhchs.org", password="12345", name="Student1"
         )
-        StudentInfo.objects.create(student=student1, id="123456")
+        StudentInfo.objects.create(student=self.student1, id="123456")
 
-        student2 = Student.objects.create_user(
+        self.student2 = Student.objects.create_user(
             email="student2@myhchs.org", password="12345", name="Student2"
         )
-        StudentInfo.objects.create(student=student2, id="654321")
+        StudentInfo.objects.create(student=self.student2, id="654321")
 
         self.library_faculty_member = LibraryFacultyMember.objects.create_user(
             email="faculty@myhchs.org", password="12345"
@@ -42,14 +42,14 @@ class CommonTestLogicMixin:
             [
                 ClassPeriodSignUp(
                     id=1,
-                    student=student1,
+                    student=self.student1,
                     class_period=period,
                     date_signed_up=self.now,
                     reason=ClassPeriodSignUp.STUDY_HALL,
                 ),
                 ClassPeriodSignUp(
                     id=2,
-                    student=student2,
+                    student=self.student2,
                     class_period=period,
                     date_signed_up=self.now,
                     reason=ClassPeriodSignUp.STUDY_HALL,
@@ -60,6 +60,21 @@ class CommonTestLogicMixin:
 
 class ClassPeriodSignUpListAPIViewTestCase(CommonTestLogicMixin, APITestCase):
     """Performs tests on :class:`signup.faculty.views.ClassPeriodSignUpListAPIView`."""
+
+    def test_accessing_as_anonymous_user(self):
+        """Tests that anonymous users will get an HTTP 401 error."""
+        client = APIClient()
+
+        response = client.get(reverse("api_periods_list"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_accessing_as_student(self):
+        """Tests that anonymous users will get an HTTP 403 error."""
+        client = APIClient()
+        client.force_login(self.student1)
+
+        response = client.get(reverse("api_periods_list"))
+        self.assertEqual(response.status_code, 403)
 
     def test_listing_periods_without_filtering(self):
         """Tests listing ClassPeriodSignUps by performing a GET request on
@@ -165,6 +180,21 @@ class ClassPeriodSignUpListAPIViewTestCase(CommonTestLogicMixin, APITestCase):
 class ClassPeriodSignUpDetailAPIViewTestCase(CommonTestLogicMixin, APITestCase):
     """Performs tests on
     :class:`signup.faculty.views.ClassPeriodSignUpDetailAPIView`."""
+
+    def test_accessing_as_anonymous_user(self):
+        """Tests that anonymous users will get an HTTP 401 error."""
+        client = APIClient()
+
+        response = client.get(reverse("api_period", kwargs={"pk": "1"}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_accessing_as_student(self):
+        """Tests that anonymous users will get an HTTP 403 error."""
+        client = APIClient()
+        client.force_login(self.student1)
+
+        response = client.get(reverse("api_period", kwargs={"pk": "1"}))
+        self.assertEqual(response.status_code, 403)
 
     def test_retrieving_period(self):
         """Tests getting info on a single ClassPeriodSignUp by performing a GET request

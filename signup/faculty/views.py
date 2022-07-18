@@ -1,16 +1,27 @@
 from itertools import groupby
 
 from django.conf import settings
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import FormView, ListView
 
 from signup.faculty.forms import FutureClassPeriodsForm
-from signup.models import ClassPeriod
+from signup.models import ClassPeriod, is_library_faculty_member
 
 
-class ClassPeriodsListView(ListView):
+class UserIsLibraryFacultyMemberMixin(UserPassesTestMixin):
+    """Ensures that users who are not library faculty members are redirected to the
+    index. Ensures that the "next" parameter isn't part of the URL."""
+
+    # See https://stackoverflow.com/q/63566841/ for more info.
+    redirect_field_name = None
+
+    def test_func(self):
+        return is_library_faculty_member(self.request.user)
+
+
+class ClassPeriodsListView(UserIsLibraryFacultyMemberMixin, ListView):
     template_name = "faculty/periods_list.html"
     context_object_name = "periods_grouped"
     future = True
@@ -65,7 +76,7 @@ class ClassPeriodsListView(ListView):
         return context
 
 
-class FutureClassPeriodsFormView(LoginRequiredMixin, FormView):
+class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
     template_name = "faculty/future_periods_form.html"
     form_class = FutureClassPeriodsForm
     success_url = reverse_lazy("future_class_periods_list")

@@ -63,7 +63,7 @@ class StudentInfoViewTestCase(TestCase):
         )
         self.client.force_login(self.student)
 
-    def test_anonymous_user(self):
+    def test_accessing_as_anonymous_user(self):
         """Tests that anonymous users are redirected to the index."""
         anonymous_client = Client()
 
