@@ -21,7 +21,7 @@ class OAuthBackend(BaseBackend):
         # pylint: disable=arguments-differ
         if user_details is not None:
             email, name = user_details
-            is_hchs_person = email.endswith("@myhchs.org")
+            is_hchs_person = email.lower().endswith("@myhchs.org")
             if is_hchs_person:
                 try:
                     user = User.objects.get(email=email)

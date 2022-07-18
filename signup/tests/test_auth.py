@@ -94,3 +94,13 @@ class OAuthBackendTestCase(TestCase):
         user = User.objects.create_user(email="user@myhchs.org", password="12345")
         found_user = authenticate(request, email="user@myhchs.org", password="12345")
         self.assertEqual(user, found_user)
+
+    def test_uppercase_email_address(self):
+        """Tests that the backend accepts email addresses that end with "@myhchs.org",
+        "@MYHCHS.ORG", or some variation of the two."""
+        request = self.factory.get("/")
+        new_user = self.backend.authenticate(
+            request, UserDetails("student@MYHCHS.org", "Student")
+        )
+        self.assertIsNotNone(new_user)
+        self.assertEqual(User.objects.count(), 2)
