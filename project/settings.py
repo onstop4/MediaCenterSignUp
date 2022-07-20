@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DEBUG", cast=bool)
+DEBUG = config("DEBUG", cast=bool, default=False)
 
 ALLOWED_HOSTS = []
 
@@ -35,6 +35,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "rest_framework",
+    "django_filters",
     "signup.apps.SignupConfig",
     "signup.faculty.apps.FacultyConfig",
     "django.contrib.admin",
@@ -178,3 +180,8 @@ SIGN_UP_FORM_CLOSES_TIME = datetime.strptime(
 # Keeps form open regardless of the values of SIGN_UP_FORM_OPENS_TIME and
 # SIGN_UP_FORM_CLOSES_TIME.
 FORCE_OPEN_SIGN_UP_FORM = config("FORCE_OPEN_SIGN_UP_FORM", cast=bool, default=False)
+
+# pylint: disable=wildcard-import, unused-wildcard-import
+if not DEBUG:
+    # Use settings specifically meant for production if DEBUG is False.
+    from project.prod_settings import *
