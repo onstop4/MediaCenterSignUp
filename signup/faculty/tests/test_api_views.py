@@ -58,7 +58,7 @@ class CommonTestLogicMixin:
         )
 
 
-class ClassPeriodSignUpListAPIViewTestCase(CommonTestLogicMixin, APITestCase):
+class TestClassPeriodSignUpListAPIView(CommonTestLogicMixin, APITestCase):
     """Performs tests on :class:`signup.faculty.views.ClassPeriodSignUpListAPIView`."""
 
     def test_accessing_as_anonymous_user(self):
@@ -188,7 +188,7 @@ class ClassPeriodSignUpListAPIViewTestCase(CommonTestLogicMixin, APITestCase):
         )
 
 
-class ClassPeriodSignUpDetailAPIViewTestCase(CommonTestLogicMixin, APITestCase):
+class TestClassPeriodSignUpDetailAPIView(CommonTestLogicMixin, APITestCase):
     """Performs tests on
     :class:`signup.faculty.views.ClassPeriodSignUpDetailAPIView`."""
 

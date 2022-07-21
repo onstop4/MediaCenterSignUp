@@ -1,5 +1,5 @@
+from constance import config
 from django import forms
-from django.conf import settings
 
 
 # See https://stackoverflow.com/a/22846522 for more info.
@@ -18,7 +18,7 @@ class FutureClassPeriodsForm(forms.Form):
             label="Date", initial=initial.get("date"), widget=DateInput
         )
 
-        for number in range(1, settings.MAX_PERIOD_NUMBER + 1):
+        for number in range(1, config.MAX_PERIOD_NUMBER + 1):
             self.fields[f"period_{number}"] = forms.IntegerField(
                 label=f"Period {number}",
                 min_value=0,

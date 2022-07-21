@@ -1,4 +1,4 @@
-from django.conf import settings
+from constance import config
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
@@ -86,7 +86,7 @@ class StudentInfoFormView(UserNeedsLoginMixin, StudentFormMixin, CreateView):
 class StudentSignUpOpenMixin:
     """Only allows request to complete normally if form is open depending on the values
     of ``SIGN_UP_FORM_OPENS_TIME``, ``SIGN_UP_FORM_CLOSES_TIME``, and
-    ``FORCE_OPEN_SIGN_UP_FORM`` in the project settings."""
+    ``FORCE_OPEN_SIGN_UP_FORM`` in the Constance settings."""
 
     def is_open(self) -> bool:
         """Determines if the form is open now according to the values of
@@ -94,20 +94,20 @@ class StudentSignUpOpenMixin:
         settings."""
         time_now_naive = timezone.localtime(timezone.now()).time()
         return (
-            settings.SIGN_UP_FORM_OPENS_TIME
+            config.SIGN_UP_FORM_OPENS_TIME
             <= time_now_naive
-            < settings.SIGN_UP_FORM_CLOSES_TIME
+            < config.SIGN_UP_FORM_CLOSES_TIME
         )
 
     def dispatch(self, request, *args, **kwargs):
-        if settings.FORCE_OPEN_SIGN_UP_FORM or self.is_open():
+        if config.FORCE_OPEN_SIGN_UP_FORM or self.is_open():
             return super().dispatch(request, *args, **kwargs)
         return render(
             request,
             "signup/student_sign_up_form_closed.html",
             {
-                "form_time_opens": settings.SIGN_UP_FORM_OPENS_TIME,
-                "form_time_closes": settings.SIGN_UP_FORM_CLOSES_TIME,
+                "form_time_opens": config.SIGN_UP_FORM_OPENS_TIME,
+                "form_time_closes": config.SIGN_UP_FORM_CLOSES_TIME,
             },
         )
 

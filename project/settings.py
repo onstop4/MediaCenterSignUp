@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-from datetime import datetime
+from datetime import time
 from os import environ
 from pathlib import Path
 
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "crispy_forms",
+    "constance",
 ]
 
 MIDDLEWARE = [
@@ -157,29 +158,49 @@ if config("OAUTHLIB_INSECURE_TRANSPORT", cast=bool):
 
 LOGIN_URL = "index"
 
-# Sets the first and last lunch period. Students can specify if they are going to the
-# library for lunch or for study hall during these periods. For the other class periods,
-# students can only indicate that they are signing up for library because they have a
-# study hall.
-LUNCH_PERIODS_START = 4
-LUNCH_PERIODS_END = 7
+CONSTANCE_BACKEND = "project.constance.ImprovedRedisBackend"
 
-MAX_PERIOD_NUMBER = 9
+CONSTANCE_REDIS_CONNECTION = {
+    "host": config("REDIS_HOST", default="127.0.0.1"),
+    "port": config("REDIS_PORT", cast=int, default=6379),
+    "db": config("REDIS_DB", cast=int, default=0),
+    "password": config("REDIS_PASSWORD"),
+}
 
-# Determines what time the form opens and what time it closes. Times must be according
-# to the time zone specified in the TIME_ZONE variable above. Tiem values in config file
-# must be in the "hour:minute" format (based on 24-hour clock).
-SIGN_UP_FORM_OPENS_TIME = datetime.strptime(
-    config("SIGN_UP_FORM_OPENS_TIME"), "%H:%M"
-).time()
-
-SIGN_UP_FORM_CLOSES_TIME = datetime.strptime(
-    config("SIGN_UP_FORM_CLOSES_TIME"), "%H:%M"
-).time()
-
-# Keeps form open regardless of the values of SIGN_UP_FORM_OPENS_TIME and
-# SIGN_UP_FORM_CLOSES_TIME.
-FORCE_OPEN_SIGN_UP_FORM = config("FORCE_OPEN_SIGN_UP_FORM", cast=bool, default=False)
+CONSTANCE_CONFIG = {
+    # Sets the maximum number of periods in a day.
+    "MAX_PERIOD_NUMBER": (
+        config("DEFAULT_MAX_PERIOD_NUMBER", cast=int),
+        "maximum number of periods",
+    ),
+    # Determines if the form should be kept open regardless of the times below.
+    "FORCE_OPEN_SIGN_UP_FORM": (
+        config("DEFAULT_FORCE_OPEN_SIGN_UP_FORM", cast=bool, default=False),
+        "force sign-up form to be open",
+    ),
+    # Determines when the form opens.
+    "SIGN_UP_FORM_OPENS_TIME": (
+        time(*(int(i) for i in config("DEFAULT_SIGN_UP_FORM_OPENS_TIME").split(":"))),
+        "time sign-up form opens",
+    ),
+    # Determines when the form closes.
+    "SIGN_UP_FORM_CLOSES_TIME": (
+        time(*(int(i) for i in config("DEFAULT_SIGN_UP_FORM_CLOSES_TIME").split(":"))),
+        "time sign-up form closes",
+    ),
+    # Students can indicate if they are signing up because they have lunch or because
+    # they have study hall between LUNCH_PERIODS_START and LUNCH_PERIODS_END. For the
+    # periods before LUNCH_PERIODS_START and after LUNCH_PERIODS_END, they can only
+    # indicate that they are signing up because they have study hall.
+    "LUNCH_PERIODS_START": (
+        config("DEFAULT_LUNCH_PERIODS_START", cast=int),
+        "first lunch period",
+    ),
+    "LUNCH_PERIODS_END": (
+        config("DEFAULT_LUNCH_PERIODS_END", cast=int),
+        "last lunch period",
+    ),
+}
 
 # pylint: disable=wildcard-import, unused-wildcard-import
 if not DEBUG:

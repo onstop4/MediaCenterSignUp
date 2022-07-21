@@ -1,9 +1,10 @@
 from datetime import datetime, time
 from unittest.mock import patch
 
+from constance.test import override_config
 from django import forms
 from django.db.utils import IntegrityError
-from django.test import Client, TestCase, TransactionTestCase, override_settings
+from django.test import Client, TestCase, TransactionTestCase
 from django.urls import reverse
 from django.utils import timezone
 
@@ -17,7 +18,7 @@ from signup.models import (
 )
 
 
-class StudentInfoFormTestCase(TransactionTestCase):
+class TestStudentInfoForm(TransactionTestCase):
     """Performs tests on :class:`signup.forms.StudentInfoForm`."""
 
     def test_student_id_validation(self):
@@ -46,7 +47,7 @@ class StudentInfoFormTestCase(TransactionTestCase):
         self.assertEqual(student.info.id, "123456")
 
 
-class StudentInfoViewTestCase(TestCase):
+class TestStudentInfoView(TestCase):
     """Tests functionality that involves handling student info. This
     includes:
     * Testing that students who haven't filled out the student info form must fill it
@@ -129,10 +130,10 @@ class StudentInfoViewTestCase(TestCase):
         self.assertTrue(student_has_info(self.student))
 
 
-@override_settings(
+@override_config(
     LUNCH_PERIODS_START=5, LUNCH_PERIODS_END=7, FORCE_OPEN_SIGN_UP_FORM=True
 )
-class StudentSignUpFormTestCase(TestCase):
+class TestStudentSignUpForm(TestCase):
     """Performs tests on :class:`signup.forms.StudentSignUpForm`."""
 
     def setUp(self):
@@ -280,10 +281,10 @@ class StudentSignUpFormTestCase(TestCase):
         self.assertEqual(form.visible_fields()[0].label, "Period 3")
 
 
-@override_settings(
+@override_config(
     LUNCH_PERIODS_START=5, LUNCH_PERIODS_END=7, FORCE_OPEN_SIGN_UP_FORM=True
 )
-class StudentSignUpViewTestCase(TestCase):
+class TestStudentSignUpView(TestCase):
     """Performs tests on :class:`signup.views.StudentSignUpFormView`. This includes
     testing that the form is rendered correctly, that form submissions are processed
     correctly, and that the form opens and closes correctly."""
@@ -401,7 +402,7 @@ class StudentSignUpViewTestCase(TestCase):
 
     def test_open_close_form(self):
         """Tests that the form opens and closes on time. Also tests that the
-        ``FORCE_OPEN_SIGN_UP_FORM`` value in the project settings also works
+        ``FORCE_OPEN_SIGN_UP_FORM`` value in the Constance settings also works
         correctly."""
         time_opens = time(6)
         time_closes = time(10)
@@ -412,14 +413,14 @@ class StudentSignUpViewTestCase(TestCase):
             localtime_patched.return_value = datetime(2022, 1, 1, 12)
 
             # Forces form to be open.
-            with self.settings(
+            with override_config(
                 SIGN_UP_FORM_OPENS_TIME=time_opens, SIGN_UP_FORM_CLOSES_TIME=time_closes
             ):
                 response = self.client.get(reverse("student_sign_up_form"))
                 self.assertContains(response, "Period 1")
 
             # Doesn't force form to be open so it should be closed.
-            with self.settings(
+            with override_config(
                 SIGN_UP_FORM_OPENS_TIME=time_opens,
                 SIGN_UP_FORM_CLOSES_TIME=time_closes,
                 FORCE_OPEN_SIGN_UP_FORM=False,
@@ -428,8 +429,8 @@ class StudentSignUpViewTestCase(TestCase):
                 self.assertContains(response, "Closed")
 
 
-@override_settings(FORCE_OPEN_SIGN_UP_FORM=True)
-class StudentSignUpSuccessViewTestCase(TestCase):
+@override_config(FORCE_OPEN_SIGN_UP_FORM=True)
+class TestStudentSignUpSuccessView(TestCase):
     """Performs tests on :class:`signup.forms.StudentSignUpSuccessView`. This includes
     testing that it lists all the periods that the student signed up for today."""
 

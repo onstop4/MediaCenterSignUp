@@ -1,5 +1,5 @@
+from constance import config
 from django import forms
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Count, F
 from django.utils import timezone
@@ -45,11 +45,7 @@ class StudentSignUpForm(forms.Form):
         for period in self.available_periods:
             # Uses ChoiceField if student can sign up for lunch. Otherwise, uses
             # BooleanField.
-            if (
-                settings.LUNCH_PERIODS_START
-                <= period.number
-                <= settings.LUNCH_PERIODS_END
-            ):
+            if config.LUNCH_PERIODS_START <= period.number <= config.LUNCH_PERIODS_END:
                 choices = ClassPeriodSignUp.REASON_TYPES
                 new_field = forms.ChoiceField(
                     choices=choices, widget=forms.RadioSelect, required=False

@@ -6,7 +6,7 @@ from signup.faculty.tests.common import convert_datetime
 from signup.models import ClassPeriod, ClassPeriodSignUp, Student, StudentInfo
 
 
-class ClassPeriodSignUpSerializerTestCase(TestCase):
+class TestClassPeriodSignUpSerializer(TestCase):
     """Performs tests on
     :class:`signup.faculty.serializers.ClassPeriodSignUpSerializer`."""
 

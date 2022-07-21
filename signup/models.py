@@ -1,4 +1,4 @@
-from django.conf import settings
+from constance import config
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -147,7 +147,7 @@ class ClassPeriod(models.Model):
     max_student_count = models.PositiveIntegerField(_("maximum students allowed"))
 
     def is_lunch_period(self):
-        return settings.LUNCH_PERIODS_START <= self.number <= settings.LUNCH_PERIODS_END
+        return config.LUNCH_PERIODS_START <= self.number <= config.LUNCH_PERIODS_END
 
 
 class ClassPeriodSignUp(models.Model):

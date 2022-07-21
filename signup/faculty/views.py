@@ -1,5 +1,6 @@
 from itertools import groupby
 
+from constance import config
 from django.conf import settings
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.urls import reverse, reverse_lazy
@@ -63,7 +64,7 @@ class ClassPeriodsListView(UserIsLibraryFacultyMemberMixin, ListView):
         context = super().get_context_data(**kwargs)
 
         # Adds range of period numbers to context for first row of grid.
-        context["period_numbers"] = range(1, settings.MAX_PERIOD_NUMBER + 1)
+        context["period_numbers"] = range(1, config.MAX_PERIOD_NUMBER + 1)
 
         # Adjusts some text on template based on whether the view is supposed to show
         # periods today and in the future OR just periods in the past.
@@ -106,7 +107,7 @@ class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
 
         periods = []
 
-        for number in range(1, settings.MAX_PERIOD_NUMBER + 1):
+        for number in range(1, config.MAX_PERIOD_NUMBER + 1):
             periods.append(
                 ClassPeriod(
                     date=date,

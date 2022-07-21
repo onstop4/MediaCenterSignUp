@@ -5,7 +5,7 @@ from signup.auth import OAuthBackend, UserDetails
 from signup.models import LibraryFacultyMember, Student, User
 
 
-class UserCreationTestCase(TestCase):
+class TestUserCreation(TestCase):
     """Tests creating users."""
 
     def test_create_generic_user(self):
@@ -27,7 +27,7 @@ class UserCreationTestCase(TestCase):
         self.assertEqual(user.user_type, User.LIBRARY_FACULTY_MEMBER)
 
 
-class OAuthBackendTestCase(TestCase):
+class TestOAuthBackend(TestCase):
     """Tests :class:`signup.auth.OAuthBackend`."""
 
     def setUp(self):

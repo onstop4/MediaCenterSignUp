@@ -1,14 +1,15 @@
 from datetime import timedelta
 
-from django.test import TestCase, override_settings
+from constance.test import override_config
+from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from signup.models import ClassPeriod, LibraryFacultyMember
 
 
-@override_settings(MAX_PERIOD_NUMBER=3)
-class ClassPeriodsListTestCase(TestCase):
+@override_config(MAX_PERIOD_NUMBER=3)
+class TestClassPeriodsList(TestCase):
     """Performs tests on :class:`signup.faculty.views.ClassPeriodsListView`."""
 
     def setUp(self):

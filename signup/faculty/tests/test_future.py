@@ -1,7 +1,8 @@
 from datetime import timedelta
 
+from constance.test import override_config
 from django import forms
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
@@ -9,13 +10,13 @@ from signup.faculty.forms import FutureClassPeriodsForm
 from signup.models import ClassPeriod, LibraryFacultyMember
 
 
-@override_settings(MAX_PERIOD_NUMBER=3)
-class FutureClassPeriodsFormTestCase(TestCase):
+@override_config(MAX_PERIOD_NUMBER=3)
+class TestFutureClassPeriodsForm(TestCase):
     """Performs tests on :class:`signup.faculty.forms.FutureClassPeriodsForm`."""
 
     def test_form_choices(self):
         """Tests that the choices of the form are generated correctly based on the value
-        of ``MAX_PERIOD_NUMBER`` in the project settings."""
+        of ``MAX_PERIOD_NUMBER`` in the Constance settings."""
         form = FutureClassPeriodsForm()
         visible_fields = form.visible_fields()
 
@@ -60,8 +61,8 @@ class FutureClassPeriodsFormTestCase(TestCase):
         self.assertFalse(form.is_valid())
 
 
-@override_settings(MAX_PERIOD_NUMBER=3)
-class FutureClassPeriodsViewTestCase(TestCase):
+@override_config(MAX_PERIOD_NUMBER=3)
+class TestFutureClassPeriodsView(TestCase):
     """Performs tests on :class:`signup.faculty.forms.FutureClassPeriodsFormView`."""
 
     def setUp(self):
@@ -76,7 +77,7 @@ class FutureClassPeriodsViewTestCase(TestCase):
         date = timezone.now().date() + timedelta(days=3)
 
         # Checks that the form has generated fields according to the value of
-        # MAX_PERIOD_NUMBER in the project settings.
+        # MAX_PERIOD_NUMBER in the Constance settings.
         response = self.client.get(reverse("future_class_periods_new"))
         self.assertContains(response, "Period 1")
         self.assertContains(response, "Period 2")
@@ -125,7 +126,7 @@ class FutureClassPeriodsViewTestCase(TestCase):
         )
 
         # Checks that the form has generated fields according to the value of
-        # MAX_PERIOD_NUMBER in the project settings.
+        # MAX_PERIOD_NUMBER in the Constance settings.
         response = self.client.get(
             reverse("future_class_periods_existing", kwargs={"date": str(date)})
         )
