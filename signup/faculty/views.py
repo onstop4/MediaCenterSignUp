@@ -3,11 +3,12 @@ from itertools import groupby
 from constance import config
 from django.conf import settings
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import FormView, ListView, TemplateView
 
-from signup.faculty.forms import FutureClassPeriodsForm
+from signup.faculty.forms import FutureClassPeriodsForm, SettingsForm
 from signup.models import ClassPeriod, is_library_faculty_member
 
 
@@ -102,7 +103,7 @@ class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
         return initial
 
     def form_valid(self, form):
-        date = form.data["date"]
+        date = form.cleaned_data["date"]
         ClassPeriod.objects.filter(date=date).delete()
 
         periods = []
@@ -112,7 +113,7 @@ class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
                 ClassPeriod(
                     date=date,
                     number=number,
-                    max_student_count=form.data[f"period_{number}"],
+                    max_student_count=form.cleaned_data[f"period_{number}"],
                 )
             )
 
@@ -140,3 +141,34 @@ class SignUpsView(UserIsLibraryFacultyMemberMixin, TemplateView):
         }
 
         return context
+
+
+class SettingsFormView(SuccessMessageMixin, FormView):
+    template_name = "signup/faculty/settings_form.html"
+    form_class = SettingsForm
+    success_url = reverse_lazy("settings_form")
+    success_message = "Settings saved successfully."
+
+    def get_initial(self):
+        initial = {
+            "max_period_number": config.MAX_PERIOD_NUMBER,
+            "force_open_sign_up_form": config.FORCE_OPEN_SIGN_UP_FORM,
+            "sign_up_form_opens_time": config.SIGN_UP_FORM_OPENS_TIME,
+            "sign_up_form_closes_time": config.SIGN_UP_FORM_CLOSES_TIME,
+            "lunch_periods_start": config.LUNCH_PERIODS_START,
+            "lunch_periods_end": config.LUNCH_PERIODS_END,
+        }
+
+        return initial
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+
+        config.MAX_PERIOD_NUMBER = data["max_period_number"]
+        config.FORCE_OPEN_SIGN_UP_FORM = data["force_open_sign_up_form"]
+        config.SIGN_UP_FORM_OPENS_TIME = data["sign_up_form_opens_time"]
+        config.SIGN_UP_FORM_CLOSES_TIME = data["sign_up_form_closes_time"]
+        config.LUNCH_PERIODS_START = data["lunch_periods_start"]
+        config.LUNCH_PERIODS_END = data["lunch_periods_end"]
+
+        return super().form_valid(form)

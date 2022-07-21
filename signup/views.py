@@ -123,7 +123,7 @@ class StudentSignUpFormView(StudentNeedsInfoMixin, StudentSignUpOpenMixin, FormV
         for period in form.available_periods:
             number = period.number
             # Checks if period was part of form.
-            yes = form.data.get(f"period_{number}", False)
+            yes = form.cleaned_data.get(f"period_{number}", False)
             if yes:
                 # If lunch period, use student's choice. Otherwise, just use
                 # ClassPeriodSignUp.STUDY_HALL. That way, a student cannot indicate that

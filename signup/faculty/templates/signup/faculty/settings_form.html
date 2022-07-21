@@ -1,0 +1,18 @@
+{% extends "signup/faculty/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Settings{% endblock title %}
+
+{% block content %}
+<h1>Settings</h1>
+
+{% for message in messages %}
+{% comment %}Uses Bootstrap's alert-success class if the message level is SUCCESS. Otherwise, Bootstrap's alert-primary will be used.{% endcomment %}
+<div class="alert {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}alert-success{% else %}alert-primary{% endif %}"" role=" alert">{{ message }}</div>
+{% endfor %}
+
+<form method="post">
+    {{ form|crispy }}
+    <input class="btn btn-primary" type="submit" value="Submit">
+</form>
+{% endblock content %}
