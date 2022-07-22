@@ -17,6 +17,7 @@ gunicorn = "~20.1.0"
 whitenoise = "~6.2.0"
 django-constance = {version = "~=2.9.0", extras = ["redis"]}
 hiredis = "~2"
+crispy-bootstrap5 = "^0.6"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.14.4"
