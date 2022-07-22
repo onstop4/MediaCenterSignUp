@@ -55,6 +55,9 @@ class TestStudentInfoForm(TransactionTestCase):
         form = StudentInfoForm(data={"id": "1234a6"})
         self.assertFalse(form.is_valid())
 
+        form = StudentInfoForm(data={"id": "12੩456"})
+        self.assertFalse(form.is_valid())
+
     def test_saving_form(self):
         """Tests that the form can only be saved when a student is specified."""
         # Student is not speciified, so saving the form should lead to an
