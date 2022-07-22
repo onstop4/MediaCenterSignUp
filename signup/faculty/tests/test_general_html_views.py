@@ -4,7 +4,7 @@ from django.urls import reverse
 from signup.models import Student
 
 
-class TestFacultyViewsAuth(TestCase):
+class TestBasicFacultyViewsAuth(TestCase):
     """Tests that unauthorized users who attempt to access a faculty view (not part of
     the API) are handled correctly."""
 

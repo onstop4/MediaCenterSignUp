@@ -4,7 +4,7 @@ from unittest.mock import patch
 from constance.test import override_config
 from django import forms
 from django.db.utils import IntegrityError
-from django.test import Client, TestCase, TransactionTestCase
+from django.test import TestCase, TransactionTestCase
 from django.urls import reverse
 from django.utils import timezone
 
@@ -12,10 +12,33 @@ from signup.forms import StudentInfoForm, StudentSignUpForm
 from signup.models import (
     ClassPeriod,
     ClassPeriodSignUp,
+    LibraryFacultyMember,
     Student,
     StudentInfo,
     student_has_info,
 )
+
+
+class TestBasicStudentViewsAuth(TestCase):
+    """Tests that users who are not students are redirected properly."""
+
+    def test_accessing_as_anonymous_user(self):
+        """Tests that anonymous users are redirected to the index."""
+        response = self.client.get(reverse("student_info_form"))
+        self.assertRedirects(response, reverse("index"))
+
+        response = self.client.post(reverse("student_info_form"), {"id": "123456"})
+        self.assertRedirects(response, reverse("index"))
+
+    def test_accessing_as_library_faculty_member(self):
+        """Tests that library faculty members are redirected to one of their views."""
+        library_faculty_member = LibraryFacultyMember.objects.create_user(
+            email="faculty@myhchs.org", password="12345"
+        )
+        self.client.force_login(library_faculty_member)
+
+        response = self.client.get(reverse("student_info_form"))
+        self.assertRedirects(response, reverse("future_class_periods_list"))
 
 
 class TestStudentInfoForm(TransactionTestCase):
@@ -63,16 +86,6 @@ class TestStudentInfoView(TestCase):
             email="student@myhchs.org", password="12345"
         )
         self.client.force_login(self.student)
-
-    def test_accessing_as_anonymous_user(self):
-        """Tests that anonymous users are redirected to the index."""
-        anonymous_client = Client()
-
-        response = anonymous_client.get(reverse("student_info_form"))
-        self.assertRedirects(response, reverse("index"))
-
-        response = anonymous_client.post(reverse("student_info_form"), {"id": "123456"})
-        self.assertRedirects(response, reverse("index"))
 
     def test_new_student_info(self):
         """Tests that new students are required to fill out student info form. Also

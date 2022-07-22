@@ -8,7 +8,12 @@ from django.views.generic import CreateView, FormView, TemplateView
 
 from signup.forms import StudentInfoForm, StudentSignUpForm
 from signup.google_oauth import generate_authorization_url, get_user_details
-from signup.models import ClassPeriod, ClassPeriodSignUp, student_has_info
+from signup.models import (
+    ClassPeriod,
+    ClassPeriodSignUp,
+    is_library_faculty_member,
+    student_has_info,
+)
 
 
 def index(request):
@@ -37,10 +42,19 @@ def google_callback(request):
 class UserNeedsLoginMixin(LoginRequiredMixin):
     """Ensures that anonymous users are redirected to the index. Normally, this can be
     accomplished just by setting ``LOGIN_URL`` in the project settings, but this mixin
-    ensures that the "next" parameter isn't part of the URL."""
+    ensures that the "next" parameter isn't part of the URL.
+
+    Also ensures that faculty members are redirected to one of their views."""
 
     # See https://stackoverflow.com/q/63566841/ for more info.
     redirect_field_name = None
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        if user.is_authenticated and is_library_faculty_member(user):
+            return redirect(reverse("future_class_periods_list"))
+
+        return super().dispatch(request, *args, **kwargs)
 
 
 class StudentNeedsInfoMixin(UserNeedsLoginMixin):
@@ -51,6 +65,7 @@ class StudentNeedsInfoMixin(UserNeedsLoginMixin):
         user = request.user
         if user.is_authenticated and not student_has_info(user):
             return redirect(reverse("student_info_form"))
+
         # If user is not authenticated, then super().dispatch will redirect user to
         # index. If student is authenticated and has filled out the form, then
         # this class and subclass will not redirect student.
