@@ -1,4 +1,4 @@
-{% extends "signup/faculty/base.html" %}
+{% extends "signup/faculty/components/base.html" %}
 {% load crispy_forms_tags %}
 
 {% block title %}Set Max Student Count{% endblock title %}
@@ -6,8 +6,5 @@
 {% block content %}
 <h1>Set the Maximum Number of Students on a Specific Day</h1>
 <p>Please fill out the following form to set the maximum amount of students on a specific day:</p>
-<form method="post">
-    {{ form|crispy }}
-    <input class="btn btn-primary" type="submit" value="Submit">
-</form>
+{% crispy form %}
 {% endblock content %}

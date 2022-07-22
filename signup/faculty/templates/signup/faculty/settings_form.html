@@ -1,4 +1,4 @@
-{% extends "signup/faculty/base.html" %}
+{% extends "signup/faculty/components/base.html" %}
 {% load crispy_forms_tags %}
 
 {% block title %}Settings{% endblock title %}
@@ -11,8 +11,5 @@
 <div class="alert {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}alert-success{% else %}alert-primary{% endif %}"" role=" alert">{{ message }}</div>
 {% endfor %}
 
-<form method="post">
-    {{ form|crispy }}
-    <input class="btn btn-primary" type="submit" value="Submit">
-</form>
+{% crispy form %}
 {% endblock content %}

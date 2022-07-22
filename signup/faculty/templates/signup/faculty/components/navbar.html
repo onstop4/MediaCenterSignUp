@@ -1,0 +1,11 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                {% include 'signup/faculty/components/navbar_item.html' with view_name='future_class_periods_list' item_text='Max Students' %}
+                {% include 'signup/faculty/components/navbar_item.html' with view_name='signups_app' item_text='Signups' %}
+                {% include 'signup/faculty/components/navbar_item.html' with view_name='settings_form' item_text='Settings' %}
+            </ul>
+        </div>
+    </div>
+</nav>

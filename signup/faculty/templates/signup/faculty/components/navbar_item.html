@@ -1,0 +1,4 @@
+<li class="nav-item">
+    {% comment %}Uses Bootstrap's active class if view_name matches the name of the current view.{% endcomment %}
+    <a class="nav-link{% if view_name == request.resolver_match.url_name %} active{% endif %}" href="{% url view_name %}">{{ item_text }}</a>
+</li>

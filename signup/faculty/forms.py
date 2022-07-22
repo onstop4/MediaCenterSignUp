@@ -1,4 +1,6 @@
 from constance import config
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Submit
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -14,6 +16,9 @@ class DateInput(forms.DateInput):
 class FutureClassPeriodsForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.template_pack = "bootstrap5"
+
         initial = kwargs.get("initial", {})
 
         self.fields["date"] = forms.DateField(
@@ -29,6 +34,8 @@ class FutureClassPeriodsForm(forms.Form):
                 initial=initial.get(f"period_{number}", 0),
             )
 
+        self.helper.add_input(Submit("submit", "Submit"))
+
 
 class SettingsForm(forms.Form):
     max_period_number = forms.IntegerField(label=_("Max number of periods"))
@@ -39,6 +46,13 @@ class SettingsForm(forms.Form):
     )
     lunch_periods_start = forms.IntegerField(label=_("First lunch period"))
     lunch_periods_end = forms.IntegerField(label=_("Last lunch period"))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.template_pack = "bootstrap5"
+
+        self.helper.add_input(Submit("submit", "Submit"))
 
     def clean(self):
         cleaned_data = super().clean()

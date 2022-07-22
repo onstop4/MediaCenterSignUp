@@ -14,8 +14,13 @@
 </head>
 
 <body>
+    {% block outer_content %}
+    {% include 'signup/faculty/components/navbar.html' %}
+
     {% block content %}
     {% endblock content %}
+
+    {% endblock outer_content %}
 </body>
 
 </html>

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "crispy_forms",
+    "crispy_bootstrap5",
     "constance",
 ]
 
@@ -201,6 +202,9 @@ CONSTANCE_CONFIG = {
         "last lunch period",
     ),
 }
+
+CRISPY_TEMPLATE_PACK = "bootstrap4"
+CRISPY_ALLOWED_TEMPLATE_PACKS = ("bootstrap4", "bootstrap5")
 
 # pylint: disable=wildcard-import, unused-wildcard-import
 if not DEBUG:
