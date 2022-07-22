@@ -1,6 +1,12 @@
 {% extends "signup/faculty/components/base.html" %}
+{% load static %}
 
 {% block title %}Class Periods in the {% if future %}Future{% else %}Past{% endif %}{% endblock title %}
+
+{% block resources %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'signup/faculty/style.css' %}">
+{% endblock resources %}
 
 {% block content %}
 <h1>Class Periods {% if future %}Today and in the Future{% else %}in the Past{% endif %}</h1>
@@ -12,32 +18,31 @@
 {% endif %}
 
 {% if periods_grouped %}
-<div class="container">
-    <div class="row">
-        <div class="col">Date</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col" class="fit">Date</th>
 
-        {% for number in period_numbers %}
-        <div class="col">{{ number }}</div>
+            {% for number in period_numbers %}
+            <th scope="col" class="fit">{{ number }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for date, periods in periods_grouped %}
+        <tr>
+            <td scope="col" class="fit">
+                {% if date == date_today %}<span class="fw-bold">Today, </span>{% endif %}{{ date|date:"l, F j, Y" }}
+                {% if future %} - <a href="{% url 'future_class_periods_existing' date %}">Edit</a>{% endif %}
+            </td>
+
+            {% for period in periods %}
+            <td scope="col" class="fit">{{ period.max_student_count }}</td>
+            {% endfor %}
+        </tr>
         {% endfor %}
-
-        {% if future %}
-        <div class="col"></div>
-        {% endif %}
-    </div>
-    {% for date, periods in periods_grouped %}
-    <div class="row">
-        <div class="col">{% if date == date_today %}<span class="fw-bold">Today</span> - {% endif %}{{ date|date:"l, F j, Y" }}</div>
-
-        {% for period in periods %}
-        <div class="col">{{ period.max_student_count }}</div>
-        {% endfor %}
-
-        {% if future %}
-        <div class="col"><a href="{% url 'future_class_periods_existing' date %}">Edit</a></div>
-        {% endif %}
-    </div>
-    {% endfor %}
-</div>
+    </tbody>
+</table>
 {% else %}
 <p>There are no class periods to display here.</p>
 {% endif %}

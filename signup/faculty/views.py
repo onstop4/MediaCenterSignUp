@@ -6,10 +6,14 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.views.generic import FormView, ListView, TemplateView
+from django.views.generic import FormView, ListView, RedirectView, TemplateView
 
 from signup.faculty.forms import FutureClassPeriodsForm, SettingsForm
 from signup.models import ClassPeriod, is_library_faculty_member
+
+
+class IndexRedirectView(RedirectView):
+    url = reverse_lazy("future_class_periods_list")
 
 
 class UserIsLibraryFacultyMemberMixin(UserPassesTestMixin):

@@ -37,7 +37,7 @@ class TestBasicStudentViewsAuth(TestCase):
         )
         self.client.force_login(library_faculty_member)
 
-        response = self.client.get(reverse("student_info_form"))
+        response = self.client.get(reverse("student_info_form"), follow=True)
         self.assertRedirects(response, reverse("future_class_periods_list"))
 
 

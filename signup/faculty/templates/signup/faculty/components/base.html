@@ -17,8 +17,10 @@
     {% block outer_content %}
     {% include 'signup/faculty/components/navbar.html' %}
 
-    {% block content %}
-    {% endblock content %}
+    <div class="container mx-2 py-4">
+        {% block content %}
+        {% endblock content %}
+    </div>
 
     {% endblock outer_content %}
 </body>

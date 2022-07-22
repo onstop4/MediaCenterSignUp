@@ -5,6 +5,7 @@ from django.urls import include, path, register_converter
 from signup.faculty.views import (
     ClassPeriodsListView,
     FutureClassPeriodsFormView,
+    IndexRedirectView,
     SettingsFormView,
     SignUpsView,
 )
@@ -26,18 +27,19 @@ class DateConverter:
 register_converter(DateConverter, "date")
 
 urlpatterns = [
+    path("", IndexRedirectView.as_view(), name="faculty_index"),
     path(
-        "future/",
+        "periods/",
         ClassPeriodsListView.as_view(),
         name="future_class_periods_list",
     ),
     path(
-        "future/new/",
+        "periods/new/",
         FutureClassPeriodsFormView.as_view(),
         name="future_class_periods_new",
     ),
     path(
-        "future/<date>/",
+        "periods/<date>/",
         FutureClassPeriodsFormView.as_view(),
         name="future_class_periods_existing",
     ),

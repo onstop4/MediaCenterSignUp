@@ -19,7 +19,7 @@ from signup.models import (
 def index(request):
     user = request.user
     if user.is_authenticated:
-        return redirect("student_form")
+        return redirect("student_sign_up_form")
 
     authorization_url, state = generate_authorization_url(request)
     request.session["oauth_state"] = state
@@ -52,7 +52,7 @@ class UserNeedsLoginMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         user = request.user
         if user.is_authenticated and is_library_faculty_member(user):
-            return redirect(reverse("future_class_periods_list"))
+            return redirect(reverse("faculty_index"))
 
         return super().dispatch(request, *args, **kwargs)
 
