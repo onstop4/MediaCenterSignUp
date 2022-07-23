@@ -2,9 +2,9 @@ const { createApp } = Vue
 
 // Taken from https://stackoverflow.com/a/15724300.
 function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
+    const value = `; ${document.cookie}`
+    const parts = value.split(`; ${name}=`)
+    if (parts.length === 2) return parts.pop().split(';').shift()
 }
 
 // Taken from https://stackoverflow.com/a/29774197.
@@ -27,31 +27,41 @@ createApp({
         return { signups: [], errorOccurred: false, sortKey: scriptData.default_sort, sortDescending: false, periodNumberInputChecked: false, showFilterModal: false, filterInputs: {}, filters: { date: new Date(scriptData.default_date), periodNumber: null, studentName: null, studentId: null, reason: "" } }
     },
     methods: {
-        updateSignups() {
-            let url = `${scriptData.listURL}?class_period__date=${getDateFormatted(this.filters.date)}`
+        getURLQueryParameters() {
+            let params = `class_period__date=${getDateFormatted(this.filters.date)}`
 
             if (this.periodNumberInputChecked) {
-                url += `&class_period__number=${this.filters.periodNumber}`
+                params += `&class_period__number=${this.filters.periodNumber}`
             }
 
             if (this.filters.studentName) {
-                url += `&search=${this.filters.studentName}`
+                params += `&search=${this.filters.studentName}`
             }
 
             if (this.filters.studentId) {
-                url += `&student__id=${this.filters.studentId}`
+                params += `&student__id=${this.filters.studentId}`
             }
 
             if (this.filters.reason) {
-                url += `&reason=${this.filters.reason}`
+                params += `&reason=${this.filters.reason}`
             }
 
-            url += `&ordering=` + (this.sortDescending ? `-${this.sortKey}` : this.sortKey)
+            params += `&ordering=` + (this.sortDescending ? `-${this.sortKey}` : this.sortKey)
+
+            return params
+        },
+        updateSignups() {
+            let url = `${scriptData.list_url}?${this.getURLQueryParameters()}`
 
             axios.get(url).then(response => { this.signups = response.data }).catch(() => { this.errorOccurred = true })
         },
+        downloadSpreadsheet() {
+            let url = `${scriptData.spreadsheet_url}?${this.getURLQueryParameters()}`
+
+            window.open(url, '_blank').focus()
+        },
         confirmAttendance(signUpId, will_confirm) {
-            axios.patch(`${scriptData.individualURL}${signUpId}/`, { 'attendance_confirmed': will_confirm }, axiosSettings).then(response => {
+            axios.patch(`${scriptData.individual_url}${signUpId}/`, { 'attendance_confirmed': will_confirm }, axiosSettings).then(response => {
                 this.signups.filter(signup => signup.id == signUpId)[0].attendance_confirmed = response.data.attendance_confirmed
             }).catch(() => { this.errorOccurred = true })
         },

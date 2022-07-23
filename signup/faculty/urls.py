@@ -5,6 +5,7 @@ from django.urls import include, path, register_converter
 from signup.faculty.views import (
     ClassPeriodsListView,
     FutureClassPeriodsFormView,
+    GenerateSpreadsheetView,
     IndexRedirectView,
     SettingsFormView,
     SignUpsView,
@@ -50,6 +51,7 @@ urlpatterns = [
     ),
     path("signups/", SignUpsView.as_view(), name="signups_app"),
     path("settings/", SettingsFormView.as_view(), name="settings_form"),
+    path("spreadsheet/", GenerateSpreadsheetView.as_view(), name="signups_spreadsheet"),
     # API urls.
     path("api/", include("signup.faculty.api.urls")),
 ]
