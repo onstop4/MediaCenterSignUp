@@ -1,6 +1,7 @@
 from constance import config
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -37,6 +38,11 @@ def google_callback(request):
         login(request, user)
         return redirect("student_sign_up_form")
     return render(request, "signup/login_failed.html", {})
+
+
+def robots_txt(request):
+    # Adapted from https://stackoverflow.com/a/39662564.
+    return HttpResponse("User-Agent: *\nDisallow: /", content_type="text/plain")
 
 
 class UserNeedsLoginMixin(LoginRequiredMixin):

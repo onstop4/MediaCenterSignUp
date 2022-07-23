@@ -7,12 +7,14 @@ from signup.views import (
     StudentSignUpSuccessView,
     google_callback,
     index,
+    robots_txt,
 )
 
 urlpatterns = [
     path("", index, name="index"),
     path("callback/", google_callback, name="google_callback"),
     path("logout/", logout_then_login, name="logout"),
+    path("robots.txt", robots_txt, name="robots_txt"),
     path("s/", StudentSignUpFormView.as_view(), name="student_sign_up_form"),
     path("s/info/", StudentInfoFormView.as_view(), name="student_info_form"),
     path(
