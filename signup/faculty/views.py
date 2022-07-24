@@ -38,7 +38,7 @@ class ClassPeriodsListView(UserIsLibraryFacultyMemberMixin, ListView):
     future = True
 
     def get_queryset(self):
-        periods = ClassPeriod.objects.get_queryset_unordered()
+        periods = ClassPeriod.objects.get_unordered_queryset()
 
         # If self.past is True, then list class periods frm the past. Otherwise, list
         # class periods today and in the future.

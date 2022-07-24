@@ -125,7 +125,7 @@ class ClassPeriodManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by("number")
 
-    def get_queryset_unordered(self):
+    def get_unordered_queryset(self):
         return super().get_queryset()
 
 
