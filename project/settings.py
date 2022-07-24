@@ -154,7 +154,7 @@ GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
 
 # Allows OAuthlib to work when HTTPS isn't an option. See https://bit.ly/3OUWd4s for
 # more info.
-if config("OAUTHLIB_INSECURE_TRANSPORT", cast=bool):
+if config("OAUTHLIB_INSECURE_TRANSPORT", cast=bool, default=False):
     environ.setdefault("OAUTHLIB_INSECURE_TRANSPORT", "1")
 
 LOGIN_URL = "index"
