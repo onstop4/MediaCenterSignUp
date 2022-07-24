@@ -13,6 +13,7 @@ class TestUserCreation(TestCase):
         including the STUDENT user type."""
         user = User.objects.create_user(email="generic@myhchs.org")
         self.assertEqual(user.user_type, User.STUDENT)
+        self.assertFalse(user.is_superuser)
 
     def test_create_student(self):
         """Tests that users created from the Student model have the correct details,
@@ -20,11 +21,26 @@ class TestUserCreation(TestCase):
         user = Student.objects.create_user(email="student@myhchs.org")
         self.assertEqual(user.user_type, User.STUDENT)
 
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
+
     def test_create_library_faculty_member(self):
         """Tests that users created from the LibraryFacultyMember model have the correct
         details, including the LIBRARY_FACULTY_MEMBER user type."""
         user = LibraryFacultyMember.objects.create_user(email="faculty@myhchs.org")
         self.assertEqual(user.user_type, User.LIBRARY_FACULTY_MEMBER)
+
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
+
+    def test_create_generic_superuser(self):
+        """Tests that superusers have the correct details, including being a STUDENT by
+        default (since generic users are also students by default)."""
+        user = User.objects.create_superuser(email="superuser@myhchs.org")
+        self.assertEqual(user.user_type, User.STUDENT)
+
+        self.assertTrue(user.is_staff)
+        self.assertTrue(user.is_superuser)
 
 
 class TestOAuthBackend(TestCase):

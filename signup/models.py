@@ -22,10 +22,11 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **kwargs):
         """Creates a new super user."""
         email = self.normalize_email(email)
+        kwargs.setdefault("user_type", self.model.default_user_type)
+        kwargs.setdefault("is_staff", True)
+        kwargs.setdefault("is_superuser", True)
         user = User(
             email=email,
-            user_type=self.model.default_user_type,
-            is_superuser=True,
             **kwargs,
         )
         user.set_password(password)
@@ -68,6 +69,11 @@ class User(AbstractBaseUser, PermissionsMixin):
             "Designates whether this user should be treated as active. "
             "Unselect this instead of deleting accounts."
         ),
+    )
+    is_staff = models.BooleanField(
+        _("staff status"),
+        default=False,
+        help_text=_("Designates whether the user can log into this admin site."),
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
 
