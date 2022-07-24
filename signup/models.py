@@ -155,6 +155,9 @@ class ClassPeriod(models.Model):
     def is_lunch_period(self):
         return config.LUNCH_PERIODS_START <= self.number <= config.LUNCH_PERIODS_END
 
+    def __str__(self):
+        return f"Period {self.number} on {self.date.strftime('%m/%d/%Y')}"
+
 
 class ClassPeriodSignUp(models.Model):
     """
@@ -194,5 +197,11 @@ class ClassPeriodSignUp(models.Model):
     # Allows library faculty to confirm that a student showed up to the library.
     attendance_confirmed = models.BooleanField(_("attendance confirmed"), default=False)
     date_attendance_confirmed = models.DateTimeField(
-        _("date attendance was confirmed"), null=True
+        _("date attendance was confirmed"), null=True, blank=True
     )
+
+    def __str__(self):
+        return (
+            f"{self.student} sign up for period {self.class_period.number} on "
+            f"{self.class_period.date.strftime('%m/%d/%Y')}"
+        )
