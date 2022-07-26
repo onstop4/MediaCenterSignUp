@@ -193,18 +193,19 @@ class GenerateSpreadsheetView(UserIsLibraryFacultyMemberMixin, View):
 
         workbook = generate_spreadsheet(_filter.qs)
 
-        # Creates temporary file to store spreadsheet.
+        # Creates file to temporarily store spreadsheet.
         with NamedTemporaryFile() as temporary_file:
             workbook.save(temporary_file)
             temporary_file.seek(0)
+            # Reads file contents as bytes to send back as a response.
             stream = temporary_file.read()
 
-            file_name = timezone.localtime(timezone.now()).strftime("%Y%m%d-%H%M%S")
+        file_name = timezone.localtime(timezone.now()).strftime("%Y%m%d-%H%M%S")
 
-            return HttpResponse(
-                stream,
-                headers={
-                    "Content-Type": "application/vnd.ms-excel",
-                    "Content-Disposition": f'attachment; filename="{file_name}.xlsx"',
-                },
-            )
+        return HttpResponse(
+            stream,
+            headers={
+                "Content-Type": "application/vnd.ms-excel",
+                "Content-Disposition": f'attachment; filename="{file_name}.xlsx"',
+            },
+        )
