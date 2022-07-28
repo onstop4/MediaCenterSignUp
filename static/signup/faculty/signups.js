@@ -30,7 +30,8 @@ createApp({
         getURLQueryParameters() {
             let params = `class_period__date=${getDateFormatted(this.filters.date)}`
 
-            if (this.periodNumberInputChecked) {
+            // Won't filter by period number if this.filters.periodNumber is not a valid number.
+            if (this.periodNumberInputChecked && this.filters.periodNumber !== null) {
                 params += `&class_period__number=${this.filters.periodNumber}`
             }
 
@@ -80,6 +81,12 @@ createApp({
         },
         saveFilters() {
             this.showFilterModal = false
+
+            // Won't save anything related to period number if this.filterInputs.periodNumber is not a valid number.
+            if (this.periodNumberInputChecked && this.filterInputs.periodNumber === null) {
+                this.periodNumberInputChecked = false
+            }
+
             this.filters = { ...this.filterInputs }
             this.updateSignups()
         }
