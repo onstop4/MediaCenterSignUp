@@ -1,16 +1,9 @@
-from django.urls import path
-from rest_framework.urlpatterns import format_suffix_patterns
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 
-from signup.faculty.api.views import (
-    ClassPeriodSignUpDetailAPIView,
-    ClassPeriodSignUpListAPIView,
-)
+from signup.faculty.api.views import ClassPeriodSignUpViewSet
 
-urlpatterns = [
-    path("signups/", ClassPeriodSignUpListAPIView.as_view(), name="api_periods_list"),
-    path(
-        "signups/<int:pk>/", ClassPeriodSignUpDetailAPIView.as_view(), name="api_period"
-    ),
-]
+router = DefaultRouter()
+router.register("signups", ClassPeriodSignUpViewSet, basename="api-signups")
 
-urlpatterns = format_suffix_patterns(urlpatterns)
+urlpatterns = [path("", include(router.urls))]

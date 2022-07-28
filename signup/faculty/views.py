@@ -1,20 +1,15 @@
 from itertools import groupby
-from tempfile import NamedTemporaryFile
 
 from constance import config
 from django.conf import settings
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.views import View
 from django.views.generic import FormView, ListView, RedirectView, TemplateView
 
-from signup.faculty.filters import ClassPeriodSignUpFilter
 from signup.faculty.forms import FutureClassPeriodsForm, SettingsForm
-from signup.faculty.spreadsheets import generate_spreadsheet
-from signup.models import ClassPeriod, ClassPeriodSignUp, is_library_faculty_member
+from signup.models import ClassPeriod, is_library_faculty_member
 
 
 class IndexRedirectView(RedirectView):
@@ -140,11 +135,11 @@ class SignUpsView(UserIsLibraryFacultyMemberMixin, TemplateView):
         context |= {
             "DEBUG": settings.DEBUG,
             "script_data": {
-                "list_url": reverse("api_periods_list"),
-                # I can't use reverse("api_period") because api_period requires an
+                "list_url": reverse("api-signups-list"),
+                # I can't use reverse("api-signups-detail") because api-signups-detail requires an
                 # argument.
                 "individual_url": "/f/api/signups/",
-                "spreadsheet_url": reverse("signups_spreadsheet"),
+                "spreadsheet_url": reverse("api-signups-generate-spreadsheet"),
                 "default_date": timezone.now(),
                 "default_sort": "student__name",
             },
@@ -182,30 +177,3 @@ class SettingsFormView(SuccessMessageMixin, FormView):
         config.LUNCH_PERIODS_END = data["lunch_periods_end"]
 
         return super().form_valid(form)
-
-
-class GenerateSpreadsheetView(UserIsLibraryFacultyMemberMixin, View):
-    def get(self, request, *args, **kwargs):
-        # Filters ClassPeriodSignUps based on URL query parameters.
-        _filter = ClassPeriodSignUpFilter(
-            request.GET, queryset=ClassPeriodSignUp.objects.all()
-        )
-
-        workbook = generate_spreadsheet(_filter.qs)
-
-        # Creates file to temporarily store spreadsheet.
-        with NamedTemporaryFile() as temporary_file:
-            workbook.save(temporary_file)
-            temporary_file.seek(0)
-            # Reads file contents as bytes to send back as a response.
-            stream = temporary_file.read()
-
-        file_name = timezone.localtime(timezone.now()).strftime("%Y%m%d-%H%M%S")
-
-        return HttpResponse(
-            stream,
-            headers={
-                "Content-Type": "application/vnd.ms-excel",
-                "Content-Disposition": f'attachment; filename="{file_name}.xlsx"',
-            },
-        )
