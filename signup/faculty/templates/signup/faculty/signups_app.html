@@ -34,11 +34,11 @@
     <table class="table">
         <thead>
             <tr>
-                <th scope="col" @click="sort('class_period__number')">Period Number</th>
-                <th scope="col" @click="sort('student__name')">Student Name</th>
-                <th scope="col" @click="sort('student__id')">Student ID</th>
-                <th scope="col" @click="sort('reason')">Reason</th>
-                <th scope="col" @click="sort('attendance_confirmed')">Confirm Attendance</th>
+                <th is="vue:table-header" text="Period Number" sort-key="class_period__number" :current-sort-key="sortKey" @change-sort="sort"></th>
+                <th is="vue:table-header" text="Student Name" sort-key="student__name" :current-sort-key="sortKey" @change-sort="sort"></th>
+                <th is="vue:table-header" text="Student ID" sort-key="student__id" :current-sort-key="sortKey" @change-sort="sort"></th>
+                <th is="vue:table-header" text="Reason" sort-key="reason" :current-sort-key="sortKey" @change-sort="sort"></th>
+                <th is="vue:table-header" text="Confirm Attendance" sort-key="attendance_confirmed" :current-sort-key="sortKey" @change-sort="sort"></th>
             </tr>
         </thead>
         <tbody>

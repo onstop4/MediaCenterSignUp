@@ -23,6 +23,22 @@ scriptData = JSON.parse(document.getElementById('script_data').textContent)
 // filterModal = new bootstrap.Modal(document.getElementById('filterModal'), { 'keyboard': false })
 
 createApp({
+    components: {
+        'table-header': {
+            props: ['text', 'sortKey', 'currentSortKey'],
+            template: `<th scope="col" :class="[isCurrentSortKey ? 'fw-bold' : 'fw-normal']" @click.stop="changeSort">{{ text }}</th>`,
+            methods: {
+                changeSort() {
+                    this.$emit('changeSort', this.sortKey)
+                }
+            },
+            computed: {
+                isCurrentSortKey() {
+                    return this.sortKey === this.currentSortKey
+                }
+            }
+        }
+    },
     data() {
         return { signups: [], errorOccurred: false, sortKey: scriptData.default_sort, sortDescending: false, periodNumberInputChecked: false, showFilterModal: false, filterInputs: {}, filters: { date: new Date(scriptData.default_date), periodNumber: null, studentName: null, studentId: null, reason: "" } }
     },
