@@ -17,7 +17,7 @@
         {% endblock content %}
 
         {% if request.user.is_authenticated %}
-        <p class="text-right mt-1 mb-0"><a href="{% url 'logout' %}">Click here</a> to log out.</p>
+        <p class="text-right mt-1 mb-0">Logged in as {{ request.user.email }}. <a href="{% url 'logout' %}">Click here to log out.</a></p>
         {% endif %}
     </div>
 </body>

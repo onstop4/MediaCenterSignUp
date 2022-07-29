@@ -6,8 +6,8 @@
                 {% include 'signup/faculty/components/navbar_item.html' with view_name='signups_app' item_text='Signups' %}
                 {% include 'signup/faculty/components/navbar_item.html' with view_name='settings_form' item_text='Settings' %}
             </ul>
-            <div class="d-flex">
-                <a class="btn btn-primary" href="{% url 'logout' %}">Log Out</a>
+            <div>
+                <span class="navbar-text">Logged in as {{ request.user.email }}.</span> <a class="btn btn-primary mx-2" href="{% url 'logout' %}">Log Out</a>
             </div>
         </div>
     </div>
