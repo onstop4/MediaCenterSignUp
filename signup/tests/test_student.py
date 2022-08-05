@@ -424,7 +424,7 @@ class TestStudentSignUpView(TestCase):
         time_closes = time(10)
 
         with patch("django.utils.timezone.localtime") as localtime_patched:
-            # Patches localtime function to 12:00 PM, which is after the closing time
+            # Patches localtime() function to 12:00 PM, which is after the closing time
             # specified above (which is 10:00 AM).
             localtime_patched.return_value = datetime(2022, 1, 1, 12)
 
