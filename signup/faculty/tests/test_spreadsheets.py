@@ -21,9 +21,12 @@ class CommonTestLogicMixin:
 
         self.now = timezone.localtime(timezone.now())
 
-        first_period = ClassPeriod(date=self.now, number=1, max_student_count=10)
-        second_period = ClassPeriod(date=self.now, number=2, max_student_count=10)
-        ClassPeriod.objects.bulk_create([first_period, second_period])
+        first_period = ClassPeriod.objects.create(
+            date=self.now, number=1, max_student_count=10
+        )
+        second_period = ClassPeriod.objects.create(
+            date=self.now, number=2, max_student_count=10
+        )
 
         # Creates ClassPeriodSignUp for both students.
         ClassPeriodSignUp.objects.bulk_create(

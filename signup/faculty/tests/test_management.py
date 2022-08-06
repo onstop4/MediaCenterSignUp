@@ -17,44 +17,39 @@ class TestDeleteOldClassPeriods(TestCase):
         student = Student.objects.create_user(
             email="student@myhchs.org", password="12345"
         )
-        self.period1, self.period2, self.period3 = ClassPeriod.objects.bulk_create(
-            [
-                # Part of the 2021-2022 school year.
-                ClassPeriod(date=date(2022, 4, 1), number=1, max_student_count=10),
-                # Part of the 2022-2023 school year.
-                ClassPeriod(date=date(2022, 9, 1), number=1, max_student_count=10),
-                # Part of the 2023-2024 school year.
-                ClassPeriod(date=date(2023, 10, 1), number=1, max_student_count=10),
-            ]
+
+        # Part of the 2021-2022 school year.
+        self.period1 = ClassPeriod.objects.create(
+            date=date(2022, 4, 1), number=1, max_student_count=10
+        )
+        # Part of the 2022-2023 school year.
+        self.period2 = ClassPeriod.objects.create(
+            date=date(2022, 9, 1), number=1, max_student_count=10
+        )
+        # Part of the 2023-2024 school year.
+        self.period3 = ClassPeriod.objects.create(
+            date=date(2023, 10, 1), number=1, max_student_count=10
         )
 
         date_signed_up = timezone.now().replace(year=2022, month=8, day=5)
 
-        (
-            self.signup1,
-            self.signup2,
-            self.signup3,
-        ) = ClassPeriodSignUp.objects.bulk_create(
-            [
-                ClassPeriodSignUp(
-                    student=student,
-                    class_period=self.period1,
-                    date_signed_up=date_signed_up,
-                    reason=ClassPeriodSignUp.STUDY_HALL,
-                ),
-                ClassPeriodSignUp(
-                    student=student,
-                    class_period=self.period2,
-                    date_signed_up=date_signed_up,
-                    reason=ClassPeriodSignUp.STUDY_HALL,
-                ),
-                ClassPeriodSignUp(
-                    student=student,
-                    class_period=self.period3,
-                    date_signed_up=date_signed_up,
-                    reason=ClassPeriodSignUp.STUDY_HALL,
-                ),
-            ]
+        self.signup1 = ClassPeriodSignUp.objects.create(
+            student=student,
+            class_period=self.period1,
+            date_signed_up=date_signed_up,
+            reason=ClassPeriodSignUp.STUDY_HALL,
+        )
+        self.signup2 = ClassPeriodSignUp.objects.create(
+            student=student,
+            class_period=self.period2,
+            date_signed_up=date_signed_up,
+            reason=ClassPeriodSignUp.STUDY_HALL,
+        )
+        self.signup3 = ClassPeriodSignUp.objects.create(
+            student=student,
+            class_period=self.period3,
+            date_signed_up=date_signed_up,
+            reason=ClassPeriodSignUp.STUDY_HALL,
         )
 
     def test_delete_old_class_periods_from_last_year(self):

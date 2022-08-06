@@ -51,7 +51,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -86,12 +85,12 @@ WSGI_APPLICATION = "project.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME", default="postgres"),
-        "USER": config("DB_USER", default="postgres"),
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": config("DB_NAME", default="librarysystem"),
+        "USER": config("DB_USER", default="root"),
         "PASSWORD": config("DB_PASSWORD"),
         "HOST": config("DB_HOST", default="127.0.0.1"),
-        "PORT": config("DB_PORT", default="5432"),
+        "PORT": config("DB_PORT", default="3306"),
     }
 }
 

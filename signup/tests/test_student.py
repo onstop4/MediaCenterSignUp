@@ -154,10 +154,11 @@ class TestStudentSignUpForm(TestCase):
 
     def setUp(self):
         now = timezone.now()
-        self.first_period = ClassPeriod(date=now, number=1, max_student_count=1)
+        self.first_period = ClassPeriod.objects.create(
+            date=now, number=1, max_student_count=1
+        )
         ClassPeriod.objects.bulk_create(
             [
-                self.first_period,
                 ClassPeriod(date=now, number=2, max_student_count=0),
                 ClassPeriod(date=now, number=3, max_student_count=1),
                 ClassPeriod(date=now, number=4, max_student_count=0),
