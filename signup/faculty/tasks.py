@@ -1,4 +1,3 @@
-from celery import shared_task
 from django.utils import timezone
 
 from signup.models import ClassPeriod
@@ -12,6 +11,13 @@ def delete_old_periods_and_signups():
     ).delete()
 
 
-@shared_task(name="Delete Old Signups")
-def delete_old_periods_and_signups_task():
-    delete_old_periods_and_signups()
+# Makes Celery functionality optional.
+try:
+    from celery import shared_task  # type: ignore
+
+    @shared_task(name="Delete Old Signups")
+    def delete_old_periods_and_signups_task():
+        delete_old_periods_and_signups()
+
+except ImportError:
+    pass

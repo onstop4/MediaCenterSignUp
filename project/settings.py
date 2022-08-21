@@ -29,6 +29,7 @@ SECRET_KEY = config("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", cast=bool, default=False)
 
+CELERY_ENABLED = config("CELERY_ENABLED", cast=bool, default=False)
 
 # Application definition
 
@@ -46,8 +47,6 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "constance",
-    "django_celery_beat",
-    "django_celery_results",
 ]
 
 MIDDLEWARE = [
@@ -206,25 +205,29 @@ CONSTANCE_CONFIG = {
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 CRISPY_ALLOWED_TEMPLATE_PACKS = ("bootstrap4", "bootstrap5")
 
-CELERY_TIMEZONE = "America/New_York"
-CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_BROKER_POOL_LIMIT = 1
-CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
-CELERY_RESULT_BACKEND = "django-db"
-CELERY_RESULT_BACKEND_MAX_RETRIES = config(
-    "CELERY_RESULT_BACKEND_MAX_RETRIES", cast=int, default=2
-)
+# Celery-related .env variables only need to be set if CELERY_ENABLED is True.
+if CELERY_ENABLED:
+    INSTALLED_APPS.extend(["django_celery_beat", "django_celery_results"])
 
-_celery_redis_host = config("CELERY_REDIS_HOST", default="127.0.0.1")
-_celery_redis_port = config("CELERY_REDIS_PORT", cast=int, default=6379)
-_celery_redis_db = config("CELERY_REDIS_DB", cast=int, default=1)
-_celery_redis_password = config("CELERY_REDIS_PASSWORD")
+    CELERY_TIMEZONE = "America/New_York"
+    CELERY_TASK_TRACK_STARTED = True
+    CELERY_TASK_TIME_LIMIT = 30 * 60
+    CELERY_BROKER_POOL_LIMIT = 1
+    CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+    CELERY_RESULT_BACKEND = "django-db"
+    CELERY_RESULT_BACKEND_MAX_RETRIES = config(
+        "CELERY_RESULT_BACKEND_MAX_RETRIES", cast=int, default=2
+    )
 
-CELERY_BROKER_URL = (
-    f"redis://:{_celery_redis_password}@{_celery_redis_host}:"
-    f"{_celery_redis_port}/{_celery_redis_db}"
-)
+    _celery_redis_host = config("CELERY_REDIS_HOST", default="127.0.0.1")
+    _celery_redis_port = config("CELERY_REDIS_PORT", cast=int, default=6379)
+    _celery_redis_db = config("CELERY_REDIS_DB", cast=int, default=1)
+    _celery_redis_password = config("CELERY_REDIS_PASSWORD", default="")
+
+    CELERY_BROKER_URL = (
+        f"redis://:{_celery_redis_password}@{_celery_redis_host}:"
+        f"{_celery_redis_port}/{_celery_redis_db}"
+    )
 
 LOGGING = {
     "version": 1,
