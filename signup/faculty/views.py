@@ -1,4 +1,4 @@
-from itertools import groupby
+from itertools import groupby, islice
 
 from constance import config
 from django.conf import settings
@@ -31,6 +31,7 @@ class ClassPeriodsListView(UserIsLibraryFacultyMemberMixin, ListView):
     template_name = "signup/faculty/periods_list.html"
     context_object_name = "periods_grouped"
     future = True
+    paginate_by = 10
 
     def get_queryset(self):
         periods = ClassPeriod.objects.get_unordered_queryset()
@@ -43,11 +44,16 @@ class ClassPeriodsListView(UserIsLibraryFacultyMemberMixin, ListView):
             else periods.filter(date__lt=timezone.now())
         )
 
-        # Groups ClassPeriod objects by date so that the max student counts of each
-        # separate ClassPeriod object can be presented together in the template.
+        # Groups ClassPeriod namedtuples by date so that the max student counts of each
+        # separate ClassPeriod namedtuple can be presented together in the template.
         periods = periods.order_by("date" if self.future else "-date", "number")
-        periods_counted = periods.count()
-        periods_grouped = groupby(periods, lambda period: period.date)
+        periods_grouped = groupby(
+            periods.values_list("date", "max_student_count", named=True),
+            lambda period: period.date,
+        )
+
+        # Counts the number of days that the periods are grouped by.
+        periods_grouped_count = periods.values("date").distinct().count()
 
         # When rendering for-loops in templates, Django will call len() on iterables.
         # When it can't call len() (because __len__ does not exist), it will convert the
@@ -58,10 +64,24 @@ class ClassPeriodsListView(UserIsLibraryFacultyMemberMixin, ListView):
         # https://stackoverflow.com/a/16171518 for more info.
         class GroupedPeriods:
             def __len__(self):
-                return periods_counted
+                return periods_grouped_count
 
             def __iter__(self):
                 return periods_grouped
+
+            # Necessary for pagination. Only returns groups of ClassPeriods that the
+            # paginator requested.
+            def __getitem__(self, key):
+                # Only works successfully if key is a slice object, which should be the
+                # case for Django's paginator.
+                if isinstance(key, slice):
+                    return [
+                        (key, list(values))
+                        for key, values in islice(
+                            periods_grouped, key.start, key.stop, key.step
+                        )
+                    ]
+                raise TypeError("Index must be a slice object")
 
         return GroupedPeriods()
 
