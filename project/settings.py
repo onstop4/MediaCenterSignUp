@@ -277,6 +277,9 @@ LOGGING = {
 }
 
 # pylint: disable=wildcard-import, unused-wildcard-import
-if not DEBUG:
+if DEBUG:
+    # Use settings specifically meant for development if DEBUG is True.
+    from project.dev_settings import *
+else:
     # Use settings specifically meant for production if DEBUG is False.
     from project.prod_settings import *
