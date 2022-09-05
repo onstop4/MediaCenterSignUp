@@ -15,8 +15,8 @@ class StudentInfoForm(forms.ModelForm):
 
     def clean_id(self):
         _id = self.cleaned_data.get("id", None)
-        # Checks that _id only contains ASCII digits.
-        if _id and _id.isdigit() and _id.isascii():
+        # Checks that _id only contains 6 ASCII digits.
+        if _id and _id.isdigit() and _id.isascii() and len(_id) == 6:
             return _id
         raise ValidationError(_("ID must be six digits."))
 

@@ -49,6 +49,9 @@ class TestStudentInfoForm(TransactionTestCase):
         form = StudentInfoForm(data={"id": "123456"})
         self.assertTrue(form.is_valid())
 
+        form = StudentInfoForm(data={"id": "12345"})
+        self.assertFalse(form.is_valid())
+
         form = StudentInfoForm(data={"id": "1234567"})
         self.assertFalse(form.is_valid())
 
