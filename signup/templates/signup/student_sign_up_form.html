@@ -7,6 +7,7 @@
 <h1>Media Center Sign-Up</h1>
 <p>Please select when you would like to attend the Media Center:</p>
 <form method="post">
+    {% csrf_token %}
     {{ form|crispy }}
     <input class="btn btn-primary" type="submit" value="Submit">
 </form>
