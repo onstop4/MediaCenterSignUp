@@ -322,6 +322,10 @@ class TestStudentSignUpView(TestCase):
         StudentInfo.objects.create(student=self.student2, id="654321")
 
         self.now = timezone.now()
+
+    def add_period_1(self):
+        """Adds a study hall period to the form. This lunch period has a max student
+        count of 1."""
         ClassPeriod.objects.create(date=self.now, number=1, max_student_count=1)
 
     def add_period_6(self):
@@ -334,9 +338,17 @@ class TestStudentSignUpView(TestCase):
         """Logs `self.client` in as student2."""
         self.client.force_login(self.student2)
 
+    def test_form_no_available_periods(self):
+        """Tests that the form will not be shown on the page if there are no periods
+        available."""
+        response = self.client.get(reverse("student_sign_up_form"))
+        self.assertNotContains(response, "form")
+        self.assertContains(response, "no available")
+
     def test_form_submission_then_capacity_reached(self):
         """Tests that once a period's capacity is reached, students can no longer sign
         up for that period."""
+        self.add_period_1()
         response = self.client.get(reverse("student_sign_up_form"))
         self.assertContains(response, "Period 1")
 
@@ -346,10 +358,13 @@ class TestStudentSignUpView(TestCase):
         self.assertEqual(ClassPeriodSignUp.objects.count(), 1)
         response = self.client.get(reverse("student_sign_up_form"))
         self.assertNotContains(response, "Period 1")
+        self.assertNotContains(response, "form")
+        self.assertContains(response, "no available")
 
     def test_choices(self):
         """Tests that the "lunch" and "study hall" choices are only listed when there is
         a lunch period on the form."""
+        self.add_period_1()
         # Lunch period is not on form, so "lunch" and "study hall" shouldn't be on form.
         response = self.client.get(reverse("student_sign_up_form"))
         self.assertNotContains(response, "Period 6")
@@ -424,6 +439,7 @@ class TestStudentSignUpView(TestCase):
         """Tests that the form opens and closes on time. Also tests that the
         ``FORCE_OPEN_SIGN_UP_FORM`` value in the Constance settings also works
         correctly."""
+        self.add_period_1()
         time_opens = time(6)
         time_closes = time(10)
 

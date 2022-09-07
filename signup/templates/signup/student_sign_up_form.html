@@ -5,10 +5,14 @@
 
 {% block content %}
 <h1>Media Center Sign-Up</h1>
+{% if form.fields %}
 <p>Please select when you would like to attend the Media Center:</p>
 <form method="post">
     {% csrf_token %}
     {{ form|crispy }}
     <input class="btn btn-primary" type="submit" value="Submit">
 </form>
+{% else %}
+<p>Sorry, there are no available class periods that you can sign up to use the media center for.</p>
+{% endif %}
 {% endblock content %}
