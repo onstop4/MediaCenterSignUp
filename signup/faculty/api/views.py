@@ -10,24 +10,15 @@ from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import BasePermission
 from rest_framework.viewsets import GenericViewSet
 
+from signup.faculty.api.filters import ClassPeriodSignUpFilter, fields
 from signup.faculty.api.serializers import ClassPeriodSignUpSerializer
-from signup.faculty.filters import ClassPeriodSignUpFilter, fields
-from signup.faculty.spreadsheets import generate_spreadsheet
+from signup.faculty.api.spreadsheets import generate_spreadsheet
 from signup.models import ClassPeriodSignUp, is_library_faculty_member
 
 
 class IsLibraryFacultyMember(BasePermission):
     def has_permission(self, request, view):
         return is_library_faculty_member(request.user)
-
-
-class ClassPeriodSignUpMixin:
-    """Contains common logic for the APIViews dealing with :class:`ClassPeriodSignUp`
-    objects."""
-
-    permission_classes = [IsLibraryFacultyMember]
-    queryset = ClassPeriodSignUp.objects.all()
-    serializer_class = ClassPeriodSignUpSerializer
 
 
 class ClassPeriodSignUpViewSet(

@@ -7,7 +7,7 @@ fields = [
     "class_period__number",
     "class_period__date",
     "student__name",
-    "student__id",
+    "student__info__id",
     "date_signed_up",
     "reason",
     "attendance_confirmed",

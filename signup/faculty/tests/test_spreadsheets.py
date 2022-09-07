@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils import timezone
 
-from signup.faculty.spreadsheets import generate_spreadsheet
+from signup.faculty.api.spreadsheets import generate_spreadsheet
 from signup.models import ClassPeriod, ClassPeriodSignUp, Student, StudentInfo
 
 

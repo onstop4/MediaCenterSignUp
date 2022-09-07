@@ -56,7 +56,7 @@ createApp({
             }
 
             if (this.filters.studentId) {
-                params += `&student__id=${this.filters.studentId}`
+                params += `&student__info__id=${this.filters.studentId}`
             }
 
             if (this.filters.reason) {

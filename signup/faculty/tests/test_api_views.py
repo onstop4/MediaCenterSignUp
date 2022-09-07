@@ -122,7 +122,7 @@ class TestClassPeriodSignUpListAPIView(CommonTestLogicMixin, APITestCase):
         # Tests the DjangoFilterBackend filter backend.
         url = (
             reverse("api-signups-list")
-            + f"?id={self.signup2.id}&class_period__number=1&student__name=Student2"
+            + f"?id={self.signup2.id}&class_period__number=1&student__name=Student2&student__info__id=654321"
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
