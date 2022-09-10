@@ -12,8 +12,7 @@ python-decouple = "^3.6"
 djangorestframework = "~3.13.1"
 requests-oauthlib = "~1.3"
 django-filter = "~22.1"
-django-constance = {version = "~=2.9.0", extras = ["redis"]}
-hiredis = "~2"
+django-constance = {version = ">=2.9.0,<2.10.0", extras = ["database"]}
 crispy-bootstrap5 = "^0.6"
 openpyxl = "~3.0.10"
 lxml = "~4.9.1"

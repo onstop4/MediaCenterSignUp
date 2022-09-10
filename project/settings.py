@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "constance",
+    "constance.backends.database",
 ]
 
 MIDDLEWARE = [
@@ -157,14 +158,14 @@ if config("OAUTHLIB_INSECURE_TRANSPORT", cast=bool, default=False):
 
 LOGIN_URL = "index"
 
-CONSTANCE_BACKEND = "project.constance.ImprovedRedisBackend"
+CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
-CONSTANCE_REDIS_CONNECTION = {
-    "host": config("CONSTANCE_REDIS_HOST", default="127.0.0.1"),
-    "port": config("CONSTANCE_REDIS_PORT", cast=int, default=6379),
-    "db": config("CONSTANCE_REDIS_DB", cast=int, default=0),
-    "password": config("CONSTANCE_REDIS_PASSWORD"),
-}
+# CONSTANCE_REDIS_CONNECTION = {
+#     "host": config("CONSTANCE_REDIS_HOST", default="127.0.0.1"),
+#     "port": config("CONSTANCE_REDIS_PORT", cast=int, default=6379),
+#     "db": config("CONSTANCE_REDIS_DB", cast=int, default=0),
+#     "password": config("CONSTANCE_REDIS_PASSWORD"),
+# }
 
 CONSTANCE_CONFIG = {
     # Sets the maximum number of periods in a day.
