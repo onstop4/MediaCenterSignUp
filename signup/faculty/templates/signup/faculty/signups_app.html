@@ -46,7 +46,7 @@
                 <td>{{ signup.period_number }}</td>
                 <td>{{ signup.student_name }}</td>
                 <td>{{ signup.student_id }}</td>
-                <td>{{ signup.reason }}</td>
+                <td><span v-if="signup.reason==='L'">Lunch</span><span v-else>Study Hall</span></td>
                 <td @click.stop="confirmAttendance(signup.id, !signup.attendance_confirmed)"><span v-if="signup.attendance_confirmed">✔</span></td>
             </tr>
         </tbody>
