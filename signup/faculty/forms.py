@@ -20,21 +20,42 @@ class FutureClassPeriodsForm(forms.Form):
         self.helper.template_pack = "bootstrap5"
 
         initial = kwargs.get("initial", {})
+        self.existing_periods = initial.get("existing_periods", {})
 
         self.fields["date"] = forms.DateField(
             label="Date", initial=initial.get("date"), widget=DateInput
         )
 
         for number in range(1, config.MAX_PERIOD_NUMBER + 1):
+            period = self.existing_periods.get(number)
             self.fields[f"period_{number}"] = forms.IntegerField(
                 label=f"Period {number}",
                 min_value=0,
                 # If form is created with an initial value for a specific period, use
                 # that value. Otherwise, just use zero.
-                initial=initial.get(f"period_{number}", 0),
+                initial=period.max_student_count if period else 0,
             )
 
         self.helper.add_input(Submit("submit", "Submit"))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        errors = []
+
+        for number in range(1, config.MAX_PERIOD_NUMBER):
+            if period := self.existing_periods.get(number):
+                new_max_student_count = cleaned_data[f"period_{number}"]
+                current_count = period.student_sign_ups.count()
+
+                if current_count > new_max_student_count:
+                    errors.append(
+                        ValidationError(
+                            f"Period {number} currently has {current_count} students, which is greater than the new maximum of {new_max_student_count}."
+                        )
+                    )
+
+        if errors:
+            raise ValidationError(errors)
 
 
 class SettingsForm(forms.Form):

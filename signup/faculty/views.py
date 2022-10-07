@@ -108,7 +108,8 @@ class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
     success_url = reverse_lazy("future_class_periods_list")
 
     def get_initial(self):
-        initial = {}
+        existing_periods = {}
+        initial = {"existing_periods": existing_periods}
         date = self.kwargs.get("date")
 
         if date:
@@ -122,26 +123,34 @@ class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
             # values as the form's initial values. Otherwise, the form will use its
             # default initial value, which is zero.
             for period in periods:
-                initial[f"period_{period.number}"] = period.max_student_count
+                existing_periods[period.number] = period
 
         return initial
 
     def form_valid(self, form):
         date = form.cleaned_data["date"]
-        ClassPeriod.objects.filter(date=date).delete()
 
-        periods = []
+        new_periods = []
+        existing_periods = form.existing_periods
 
         for number in range(1, config.MAX_PERIOD_NUMBER + 1):
-            periods.append(
-                ClassPeriod(
-                    date=date,
-                    number=number,
-                    max_student_count=form.cleaned_data[f"period_{number}"],
+            if period := existing_periods.get(number):
+                period.max_student_count = form.cleaned_data[f"period_{number}"]
+            else:
+                new_periods.append(
+                    ClassPeriod(
+                        date=date,
+                        number=number,
+                        max_student_count=form.cleaned_data[f"period_{number}"],
+                    )
                 )
-            )
 
-        ClassPeriod.objects.bulk_create(periods)
+        if new_periods:
+            ClassPeriod.objects.bulk_create(new_periods)
+        if existing_periods:
+            ClassPeriod.objects.bulk_update(
+                existing_periods.values(), ["max_student_count"]
+            )
 
         return super().form_valid(form)
 
