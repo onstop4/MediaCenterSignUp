@@ -5,6 +5,7 @@
 
 {% block resources %}
 {{ block.super }}
+<link rel="stylesheet" href="{% static 'signup/faculty/style.css' %}">
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 {% if DEBUG %}
 <script src="https://unpkg.com/vue@3.2"></script>
@@ -39,6 +40,7 @@
                 <th is="vue:table-header" text="Student ID" sort-key="student__id" :current-sort-key="sortKey" @change-sort="sort"></th>
                 <th is="vue:table-header" text="Reason" sort-key="reason" :current-sort-key="sortKey" @change-sort="sort"></th>
                 <th is="vue:table-header" text="Confirm Attendance" sort-key="attendance_confirmed" :current-sort-key="sortKey" @change-sort="sort"></th>
+                <th class="fw-normal">Removal</th>
             </tr>
         </thead>
         <tbody>
@@ -47,7 +49,13 @@
                 <td>{{ signup.student_name }}</td>
                 <td>{{ signup.student_id }}</td>
                 <td><span v-if="signup.reason==='L'">Lunch</span><span v-else>Study Hall</span></td>
-                <td @click.stop="confirmAttendance(signup.id, !signup.attendance_confirmed)"><span v-if="signup.attendance_confirmed">✔</span></td>
+                <td>
+                    <button type="button" class="btn btn-success" @click.stop="confirmAttendance(signup.id, !signup.attendance_confirmed)">
+                        <span v-if="signup.attendance_confirmed">✔</span>
+                        <span v-else>Confirm</span>
+                    </button>
+                </td>
+                <td><button type="button" class="btn btn-danger" @click.stop="remove(signup.id)">Remove</button></td>
             </tr>
         </tbody>
     </table>

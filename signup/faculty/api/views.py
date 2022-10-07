@@ -3,12 +3,10 @@ from tempfile import NamedTemporaryFile
 from django.http import HttpResponse
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import BasePermission
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import ModelViewSet
 
 from signup.faculty.api.filters import ClassPeriodSignUpFilter, fields
 from signup.faculty.api.serializers import ClassPeriodSignUpSerializer
@@ -21,14 +19,7 @@ class IsLibraryFacultyMember(BasePermission):
         return is_library_faculty_member(request.user)
 
 
-class ClassPeriodSignUpViewSet(
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    GenericViewSet,
-):
+class ClassPeriodSignUpViewSet(ModelViewSet):
     permission_classes = [IsLibraryFacultyMember]
     queryset = ClassPeriodSignUp.objects.all()
     serializer_class = ClassPeriodSignUpSerializer
