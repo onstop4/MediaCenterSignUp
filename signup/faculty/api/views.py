@@ -3,6 +3,7 @@ from tempfile import NamedTemporaryFile
 from django.core.mail import send_mail
 from django.http import HttpResponse
 from django.utils import timezone
+from django.utils.formats import date_format
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
@@ -38,9 +39,10 @@ class ClassPeriodSignUpViewSet(ModelViewSet):
         period = signup.class_period
 
         if period.date >= timezone.localdate(timezone.now()):
+            period_date_formatted = date_format(period.date, "F j, Y")
             send_mail(
                 "Media Center Sign-Up Removal",
-                f"You signed up to use the Holy Cross Media Center during period {period.number} on {period.date}. This sign-up has been removed.",
+                f"You signed up to use the Holy Cross Media Center during period {period.number} on {period_date_formatted}. This sign-up has been removed.",
                 from_email=None,
                 recipient_list=[signup.student.email],
                 fail_silently=True,
