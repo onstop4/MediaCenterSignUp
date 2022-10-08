@@ -6,3 +6,5 @@ ALLOWED_HOSTS = (
     if (allowed_hosts_comma_separated := config("ALLOWED_HOSTS", default=""))
     else []
 )
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

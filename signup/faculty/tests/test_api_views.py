@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from io import BytesIO
 
+from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -262,16 +263,65 @@ class TestClassPeriodSignUpDetailAPIView(CommonTestLogicMixin, APITestCase):
             },
         )
 
-    def test_deleting_period(self):
+    def test_deleting_period_in_future(self):
         """Tests deleting a single ClassPeriodSignUp by performing a DELETE request on
-        on ``api-signups-detail``."""
+        on ``api-signups-detail``. This ClassPeriodSignUp is associated with a period in
+        the present/future. An email should be sent to the associated student in the
+        process."""
+        # Checks that the email outbox is empty.
+        self.assertEqual(len(mail.outbox), 0)
+
         # Performs DELETE request.
         response = self.client.delete(reverse("api-signups-detail", kwargs={"pk": "1"}))
         self.assertEqual(response.status_code, 204)
 
+        # Checks that an email has been sent to the student who signed up.
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, "Media Center Sign-Up Removal")
+        self.assertEqual(mail.outbox[0].to, ["student1@myhchs.org"])
+        self.assertTrue(
+            "You signed up to use the Holy Cross Media Center during period 1"
+            in mail.outbox[0].body,
+        )
+
         # Checks that the deleted ClassPeriodSignUp no longer exists.
         response = self.client.get(reverse("api-signups-detail", kwargs={"pk": "1"}))
         self.assertEqual(response.status_code, 404)
+
+        # Checks that no more emails were sent.
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_deleting_period_in_past(self):
+        """Tests deleting a single ClassPeriodSignUp by performing a DELETE request on
+        on ``api-signups-detail``. This ClassPeriodSignUp is associated with a period in
+        the past. An email shouldn't be sent to the associated student."""
+        past_period = ClassPeriod.objects.create(
+            date=self.now - timedelta(days=3), number=1, max_student_count=10
+        )
+        ClassPeriodSignUp.objects.create(
+            id=3,
+            student=self.student1,
+            class_period=past_period,
+            date_signed_up=self.now,
+            reason=ClassPeriodSignUp.STUDY_HALL,
+        )
+
+        # Checks that the email outbox is empty.
+        self.assertEqual(len(mail.outbox), 0)
+
+        # Performs DELETE request.
+        response = self.client.delete(reverse("api-signups-detail", kwargs={"pk": "3"}))
+        self.assertEqual(response.status_code, 204)
+
+        # Checks that an email has been sent to the student who signed up.
+        self.assertEqual(len(mail.outbox), 0)
+
+        # Checks that the deleted ClassPeriodSignUp no longer exists.
+        response = self.client.get(reverse("api-signups-detail", kwargs={"pk": "3"}))
+        self.assertEqual(response.status_code, 404)
+
+        # Checks that no more emails were sent.
+        self.assertEqual(len(mail.outbox), 0)
 
 
 class TestSpreadsheetView(SpreadsheetTestLogicMixin, TestCase):
