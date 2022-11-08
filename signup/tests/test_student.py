@@ -486,7 +486,7 @@ class TestStudentSignUpSuccessView(TestCase):
     def test_without_submission(self):
         """Tests that no periods are listed when the student hasn't signed up for any."""
         response = self.client.get(reverse("student_sign_up_success"))
-        self.assertContains(response, "Media Center.")
+        self.assertContains(response, "haven't")
         self.assertNotContains(response, "Period")
 
     def test_with_submission(self):

@@ -4,5 +4,7 @@
 
 {% block content %}
 <h1>Sign-Up Form Closed</h1>
-The sign-up form is only open between {{ form_time_opens|time:"g:i A" }} and {{ form_time_closes|time:"g:i A" }}.
+<p>The sign-up form is only open between {{ form_time_opens|time:"g:i A" }} and {{ form_time_closes|time:"g:i A" }}.</p>
+
+{% include "signup/components/view_existing_signups.html" %}
 {% endblock content %}
