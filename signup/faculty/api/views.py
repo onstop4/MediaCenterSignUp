@@ -1,6 +1,6 @@
 from tempfile import NamedTemporaryFile
 
-from django.core.mail import send_mail
+from django.core.mail import send_mail, send_mass_mail
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.formats import date_format
@@ -16,6 +16,8 @@ from signup.faculty.api.filters import ClassPeriodSignUpFilter, fields
 from signup.faculty.api.serializers import ClassPeriodSignUpSerializer
 from signup.faculty.api.spreadsheets import generate_spreadsheet
 from signup.models import ClassPeriodSignUp, is_library_faculty_member
+
+DATE_FORMAT = "F j, Y"
 
 
 class IsLibraryFacultyMember(BasePermission):
@@ -39,16 +41,48 @@ class ClassPeriodSignUpViewSet(ModelViewSet):
         period = signup.class_period
 
         if period.date >= timezone.localdate(timezone.now()):
-            period_date_formatted = date_format(period.date, "F j, Y")
+            period_date_formatted = date_format(period.date, DATE_FORMAT)
             send_mail(
                 "Media Center Sign-Up Removal",
                 f"You signed up to use the Holy Cross Media Center during period {period.number} on {period_date_formatted}. This sign-up has been removed.",
                 from_email=None,
-                recipient_list=[signup.student.email],
+                recipient_list=(signup.student.email,),
                 fail_silently=True,
             )
 
         self.perform_destroy(signup)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["POST"])
+    def delete_multiple(self, request):
+        signup_ids = request.POST.getlist("id")
+        signups = ClassPeriodSignUp.objects.filter(id__in=signup_ids).select_related(
+            "student", "class_period"
+        )
+
+        # Determines if any signups were found.
+        if signups.exists():
+            messages = []
+            now = timezone.localdate(timezone.now())
+            for signup in signups:
+                student = signup.student
+                period = signup.class_period
+                # If associated periods are in the present/future, then emails will be
+                # sent to notify students of the removal of their signups.
+                if period.date >= now:
+                    period_date_formatted = date_format(period.date, DATE_FORMAT)
+                    messages.append(
+                        (
+                            "Media Center Sign-Up Removal",
+                            f"You signed up to use the Holy Cross Media Center during period {period.number} on {period_date_formatted}. This sign-up has been removed.",
+                            None,
+                            (student.email,),
+                        )
+                    )
+            send_mass_mail(messages, fail_silently=True)
+
+            signups.delete()
+
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=["GET"])

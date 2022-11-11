@@ -42,7 +42,7 @@ class CommonTestLogicMixin:
         self.client.force_login(self.library_faculty_member)
 
         self.now = timezone.now()
-        period = ClassPeriod.objects.create(
+        self.period = ClassPeriod.objects.create(
             date=self.now.date(), number=1, max_student_count=10
         )
 
@@ -52,14 +52,14 @@ class CommonTestLogicMixin:
                 ClassPeriodSignUp(
                     id=1,
                     student=self.student1,
-                    class_period=period,
+                    class_period=self.period,
                     date_signed_up=self.now,
                     reason=ClassPeriodSignUp.STUDY_HALL,
                 ),
                 ClassPeriodSignUp(
                     id=2,
                     student=self.student2,
-                    class_period=period,
+                    class_period=self.period,
                     date_signed_up=self.now,
                     reason=ClassPeriodSignUp.STUDY_HALL,
                 ),
@@ -217,7 +217,7 @@ class TestClassPeriodSignUpDetailAPIView(CommonTestLogicMixin, APITestCase):
         response = client.get(reverse("api-signups-detail", kwargs={"pk": "1"}))
         self.assertEqual(response.status_code, 403)
 
-    def test_retrieving_period(self):
+    def test_retrieving_signup(self):
         """Tests getting info on a single ClassPeriodSignUp by performing a GET request
         on ``api-signups-detail``."""
         response = self.client.get(reverse("api-signups-detail", kwargs={"pk": "1"}))
@@ -236,7 +236,7 @@ class TestClassPeriodSignUpDetailAPIView(CommonTestLogicMixin, APITestCase):
             },
         )
 
-    def test_updating_period(self):
+    def test_updating_signup(self):
         """Tests updating info on a single ClassPeriodSignUp by performing a PATCH
         request on ``api-signups-detail``. Also tests that only writable fields are updated."""
         # Attempts to change both a writable field ("attendance_confirmed") and a
@@ -263,7 +263,7 @@ class TestClassPeriodSignUpDetailAPIView(CommonTestLogicMixin, APITestCase):
             },
         )
 
-    def test_deleting_period_in_future(self):
+    def test_deleting_signup_in_future(self):
         """Tests deleting a single ClassPeriodSignUp by performing a DELETE request on
         on ``api-signups-detail``. This ClassPeriodSignUp is associated with a period in
         the present/future. An email should be sent to the associated student in the
@@ -291,7 +291,7 @@ class TestClassPeriodSignUpDetailAPIView(CommonTestLogicMixin, APITestCase):
         # Checks that no more emails were sent.
         self.assertEqual(len(mail.outbox), 1)
 
-    def test_deleting_period_in_past(self):
+    def test_deleting_signup_in_past(self):
         """Tests deleting a single ClassPeriodSignUp by performing a DELETE request on
         on ``api-signups-detail``. This ClassPeriodSignUp is associated with a period in
         the past. An email shouldn't be sent to the associated student."""
@@ -313,7 +313,7 @@ class TestClassPeriodSignUpDetailAPIView(CommonTestLogicMixin, APITestCase):
         response = self.client.delete(reverse("api-signups-detail", kwargs={"pk": "3"}))
         self.assertEqual(response.status_code, 204)
 
-        # Checks that an email has been sent to the student who signed up.
+        # Checks that no email was sent to the student who signed up.
         self.assertEqual(len(mail.outbox), 0)
 
         # Checks that the deleted ClassPeriodSignUp no longer exists.
@@ -322,6 +322,83 @@ class TestClassPeriodSignUpDetailAPIView(CommonTestLogicMixin, APITestCase):
 
         # Checks that no more emails were sent.
         self.assertEqual(len(mail.outbox), 0)
+
+    def create_past_period(self):
+        """Creates a period in the past."""
+        # Creates a period in the past and a signups associated with that period.
+        past_period = ClassPeriod.objects.create(
+            date=self.now - timedelta(days=2), number=1, max_student_count=10
+        )
+        ClassPeriodSignUp.objects.create(
+            id=3,
+            student=self.student1,
+            class_period=past_period,
+            date_signed_up=self.now,
+            reason=ClassPeriodSignUp.STUDY_HALL,
+        )
+
+    def test_deleting_multiple_signups_in_past(self):
+        """Tests deleting multiple signups at once by performing a POST request on
+        ``api-signups-delete-multiple``. Ensures that emails will not be sent to the
+        students who signed up because the periods associated with the signups are in
+        the past."""
+        self.create_past_period()
+
+        # Ensures that there are now three signups: two in the present/future and on in
+        # the past.
+        signups = ClassPeriodSignUp.objects.all()
+        self.assertEqual(signups.count(), 3)
+
+        # Performs POST request on signup associated with periods in the past.
+        response = self.client.post(
+            reverse("api-signups-delete-multiple"), {"id": ["3"]}
+        )
+        self.assertEqual(response.status_code, 204)
+
+        # Ensures that only two signups remain.
+        signups = ClassPeriodSignUp.objects.all()
+        self.assertEqual(signups.count(), 2)
+
+        # Ensures that no emails were sent.
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_deleting_multiple_signups_in_future(self):
+        """Tests deleting multiple signups at once by performing a POST request on
+        ``api-signups-delete-multiple``. Ensures that emails will be sent to the
+        students who signed up because the periods associated with the signups are in
+        the present/future."""
+        self.create_past_period()
+
+        # Performs POST request on signups associated with periods in the
+        # present/future.
+        response = self.client.post(
+            reverse("api-signups-delete-multiple"),
+            {"id": ["1", "2"]},
+        )
+        self.assertEqual(response.status_code, 204)
+
+        # Ensures that only one signup remain.
+        remaining = ClassPeriodSignUp.objects.all()
+        self.assertEqual(remaining.count(), 1)
+
+        # Ensures that two emails were sent because of the deleted signups.
+        self.assertEqual(len(mail.outbox), 2)
+
+        # Verifies the contents of the first email.
+        self.assertEqual(mail.outbox[0].subject, "Media Center Sign-Up Removal")
+        self.assertEqual(mail.outbox[0].to, ["student1@myhchs.org"])
+        self.assertTrue(
+            "You signed up to use the Holy Cross Media Center during period 1"
+            in mail.outbox[0].body,
+        )
+
+        # Verifies the contents of the second email.
+        self.assertEqual(mail.outbox[1].subject, "Media Center Sign-Up Removal")
+        self.assertEqual(mail.outbox[1].to, ["student2@myhchs.org"])
+        self.assertTrue(
+            "You signed up to use the Holy Cross Media Center during period 1"
+            in mail.outbox[1].body,
+        )
 
 
 class TestSpreadsheetView(SpreadsheetTestLogicMixin, TestCase):
@@ -438,7 +515,7 @@ class TestSpreadsheetView(SpreadsheetTestLogicMixin, TestCase):
         generated spreadsheet will contain only one row (the headings) when there are no
         signups for a specific day."""
         # There are no ClassPeriodSignUps for tomorrow.
-        tomorrow = self.now + timedelta(days=1)
+        tomorrow = self.now + timedelta(days=2)
 
         # Checks that the HTTP headers are correct.
         response = self.client.get(
