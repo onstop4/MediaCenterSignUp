@@ -82,11 +82,6 @@ createApp({
                 this.signups.filter(signup => signup.id == signUpId)[0].attendance_confirmed = response.data.attendance_confirmed
             }).catch(() => { this.errorOccurred = true })
         },
-        remove(signUpId) {
-            axios.delete(`${scriptData.individual_url}${signUpId}/`, axiosSettings).then(() => {
-                this.signups = this.signups.filter(signup => signup.id != signUpId)
-            }).catch(() => { this.errorOccurred = true })
-        },
         sort(key) {
             if (this.sortKey === key && !this.sortDescending) {
                 this.sortDescending = true
