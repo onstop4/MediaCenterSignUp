@@ -165,9 +165,10 @@ class SignUpsView(UserIsLibraryFacultyMemberMixin, TemplateView):
             "DEBUG": settings.DEBUG,
             "script_data": {
                 "list_url": reverse("api-signups-list"),
-                # I can't use reverse("api-signups-detail") because api-signups-detail requires an
-                # argument.
+                # I can't use reverse("api-signups-detail") because api-signups-detail
+                # requires an argument.
                 "individual_url": "/f/api/signups/",
+                "delete_multiple_signups": reverse("api-signups-delete-multiple"),
                 "spreadsheet_url": reverse("api-signups-generate-spreadsheet"),
                 "default_date": timezone.now(),
                 "default_sort": "student__name",

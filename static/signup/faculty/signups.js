@@ -110,6 +110,45 @@ createApp({
 
             this.filters = { ...this.filterInputs }
             this.updateSignups()
+        },
+        signupCheckboxToggled() {
+            let selectedSignups = this.signups.filter(signup => signup.selected)
+            let selectAllCheckbox = document.querySelector("#select-all-signups-checkbox")
+
+            if (selectedSignups.length === this.signups.length) {
+                selectAllCheckbox.checked = true
+                selectAllCheckbox.indeterminate = false
+            } else if (selectedSignups.length > 0) {
+                selectAllCheckbox.checked = false
+                selectAllCheckbox.indeterminate = true
+            } else {
+                selectAllCheckbox.checked = false
+                selectAllCheckbox.indeterminate = false
+            }
+        }, selectAllOrNone() {
+            let selectedSignups = this.signups.filter(signup => signup.selected)
+            let selectAllCheckbox = document.querySelector("#select-all-signups-checkbox")
+
+            selectAllCheckbox.indeterminate = false
+            let toChange = !(selectedSignups.length === this.signups.length)
+
+            selectAllCheckbox.checked = toChange
+            this.signups.forEach(signup => { signup.selected = toChange })
+
+            if (selectedSignups.length === this.signups.length) {
+                selectAllCheckbox.checked = false
+                selectedSignups.forEach(signup => { signup.selected = false })
+            } else {
+                selectAllCheckbox.checked = true
+                selectAllCheckbox.indeterminate = false
+            }
+        },
+        removeMultiple() {
+            let ids = this.signups.filter(signup => signup.selected).map(signup => `id=${signup.id}`).join("&");
+
+            axios.post(scriptData.delete_multiple_signups, ids, axiosSettings).then(() => {
+                this.signups = this.signups.filter(signup => !signup.selected)
+            }).catch(() => { this.errorOccurred = true })
         }
     }, computed: {
         stringDateFilter: {
@@ -136,6 +175,9 @@ createApp({
         },
         moreThanDateFilterActive() {
             return (this.filters.periodNumber || this.filters.studentName || this.filters.studentId || this.filters.reason)
+        },
+        noSignupSelected() {
+            return !this.signups.some(signup => signup.selected)
         }
     },
     mounted() {

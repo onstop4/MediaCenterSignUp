@@ -22,6 +22,7 @@
     <h2>Sign-Ups on {{ readableDateFilter }}</h2>
     <button type="button" class="btn btn-primary" @click.stop="showFilterModal = true">Edit Filters</button>
     <button type="button" class="btn btn-secondary mx-2" @click.stop="downloadSpreadsheet">Export as Excel Spreadsheet</button>
+    <button type="button" class="btn btn-danger mx-2" @click.stop="removeMultiple" :disabled="noSignupSelected">Remove Selected Sign-Ups</button>
     <div v-if="moreThanDateFilterActive">
         <h4>Filtering By:</h4>
         <ul>
@@ -35,6 +36,9 @@
     <table class="table">
         <thead>
             <tr>
+                <th scope="col" v-if="signups.length>0">
+                    <input class="form-check-input" id="select-all-signups-checkbox" type="checkbox" @change="selectAllOrNone">
+                </th>
                 <th is="vue:table-header" text="Period Number" sort-key="class_period__number" :current-sort-key="sortKey" @change-sort="sort"></th>
                 <th is="vue:table-header" text="Student Name" sort-key="student__name" :current-sort-key="sortKey" @change-sort="sort"></th>
                 <th is="vue:table-header" text="Student ID" sort-key="student__id" :current-sort-key="sortKey" @change-sort="sort"></th>
@@ -45,6 +49,9 @@
         </thead>
         <tbody>
             <tr v-for="signup in signups" :key="signup.id">
+                <td>
+                    <input class="form-check-input" type="checkbox" v-model="signup.selected" @change="signupCheckboxToggled()">
+                </td>
                 <td>{{ signup.period_number }}</td>
                 <td>{{ signup.student_name }}</td>
                 <td>{{ signup.student_id }}</td>
