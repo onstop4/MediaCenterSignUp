@@ -21,8 +21,8 @@
 <div id="app">
     <h2>Sign-Ups on {{ readableDateFilter }}</h2>
     <button type="button" class="btn btn-primary" @click.stop="showFilterModal = true">Edit Filters</button>
-    <button type="button" class="btn btn-secondary mx-2" @click.stop="downloadSpreadsheet">Export as Excel Spreadsheet</button>
-    <button type="button" class="btn btn-danger mx-2" @click.stop="removeMultiple" :disabled="noSignupSelected">Remove Selected Sign-Ups</button>
+    <button type="button" class="btn btn-secondary ms-2" @click.stop="downloadSpreadsheet">Export as Excel Spreadsheet</button>
+    <button type="button" class="btn btn-danger ms-2" @click.stop="removeMultiple" :disabled="noSignupSelected">Remove Selected Sign-Ups</button>
     <div v-if="moreThanDateFilterActive">
         <h4>Filtering By:</h4>
         <ul>

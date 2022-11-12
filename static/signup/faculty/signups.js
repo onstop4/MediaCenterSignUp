@@ -122,11 +122,11 @@ createApp({
             }
         }, selectAllOrNone() {
             let selectedSignups = this.signups.filter(signup => signup.selected)
+
             let selectAllCheckbox = document.querySelector("#select-all-signups-checkbox")
-
             selectAllCheckbox.indeterminate = false
-            let toChange = !(selectedSignups.length === this.signups.length)
 
+            let toChange = !(selectedSignups.length === this.signups.length)
             selectAllCheckbox.checked = toChange
             this.signups.forEach(signup => { signup.selected = toChange })
 
@@ -143,6 +143,10 @@ createApp({
 
             axios.post(scriptData.delete_multiple_signups, ids, axiosSettings).then(() => {
                 this.signups = this.signups.filter(signup => !signup.selected)
+
+                let selectAllCheckbox = document.querySelector("#select-all-signups-checkbox")
+                selectAllCheckbox.checked = false
+                selectAllCheckbox.indeterminate = false
             }).catch(() => { this.errorOccurred = true })
         }
     }, computed: {
