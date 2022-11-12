@@ -9,15 +9,15 @@
     }
 </style>
 
-<h1>Sign-Up Successful</h1>
 {% if periods %}
-You have successfully signed up to use the Media Center during the following class periods:
+<p>You have successfully signed up to use the Media Center during the following class periods:</p>
 <ul>
     {% for period in periods %}
     <li>Period {{ period.number }}</li>
     {% endfor %}
 </ul>
 {% else %}
-You haven't signed up to use the Media Center during any of today's class periods.
+<p>You haven't signed up to use the Media Center during any of today's class periods.</p>
 {% endif %}
+<p><a href="{% url 'student_sign_up_form' %}">Click here</a> to go back.</p>
 {% endblock content %}
