@@ -1,7 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
-from signup.models import Student
+from signup.models import ClassPeriod, Student
 
 
 class TestBasicFacultyViewsAuth(TestCase):
@@ -20,5 +21,27 @@ class TestBasicFacultyViewsAuth(TestCase):
         )
         self.client.force_login(student)
 
+        response = self.client.get(reverse("faculty_index"))
+        self.assertEqual(response.status_code, 403)
+
         response = self.client.get(reverse("future_class_periods_list"))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.get(reverse("future_class_periods_new"))
+        self.assertEqual(response.status_code, 403)
+
+        now = timezone.now()
+        ClassPeriod.objects.create(date=now, number=1, max_student_count=10)
+        response = self.client.get(
+            reverse("future_class_periods_existing", kwargs={"date": str(now)})
+        )
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.get(reverse("past_class_periods_list"))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.get(reverse("signups_app"))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.get(reverse("settings_form"))
         self.assertEqual(response.status_code, 403)

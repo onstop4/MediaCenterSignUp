@@ -12,10 +12,6 @@ from signup.faculty.forms import FutureClassPeriodsForm, SettingsForm
 from signup.models import ClassPeriod, is_library_faculty_member
 
 
-class IndexRedirectView(RedirectView):
-    url = reverse_lazy("future_class_periods_list")
-
-
 class UserIsLibraryFacultyMemberMixin(UserPassesTestMixin):
     """Ensures that users who are not library faculty members are redirected to the
     index. Ensures that the "next" parameter isn't part of the URL."""
@@ -25,6 +21,10 @@ class UserIsLibraryFacultyMemberMixin(UserPassesTestMixin):
 
     def test_func(self):
         return is_library_faculty_member(self.request.user)
+
+
+class IndexRedirectView(UserIsLibraryFacultyMemberMixin, RedirectView):
+    url = reverse_lazy("future_class_periods_list")
 
 
 class ClassPeriodsListView(UserIsLibraryFacultyMemberMixin, ListView):
@@ -178,7 +178,7 @@ class SignUpsView(UserIsLibraryFacultyMemberMixin, TemplateView):
         return context
 
 
-class SettingsFormView(SuccessMessageMixin, FormView):
+class SettingsFormView(UserIsLibraryFacultyMemberMixin, SuccessMessageMixin, FormView):
     template_name = "signup/faculty/settings_form.html"
     form_class = SettingsForm
     success_url = reverse_lazy("settings_form")
