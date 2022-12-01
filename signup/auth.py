@@ -26,8 +26,7 @@ class OAuthBackend(BaseBackend):
                 try:
                     user = User.objects.get(email=email)
                 except User.DoesNotExist:
-                    user = Student(email=email, name=name)
-                    user.save()
+                    user = Student.objects.create_user(email=email, name=name)
                 if self.user_can_authenticate(user):
                     return user
 
