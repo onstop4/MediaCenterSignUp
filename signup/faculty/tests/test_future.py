@@ -20,35 +20,44 @@ class TestFutureClassPeriodsForm(TestCase):
         form = FutureClassPeriodsForm()
         visible_fields = form.visible_fields()
 
-        # Checks that the first field is the date.
-        self.assertEqual(visible_fields[0].label, "Date")
-        self.assertTrue(isinstance(visible_fields[0].field, forms.DateField))
-
         # Checks that the integer fields are generated correctly.
-        self.assertEqual(visible_fields[1].label, "Period 1")
+        self.assertEqual(visible_fields[0].label, "Period 1")
+        self.assertTrue(isinstance(visible_fields[0].field, forms.IntegerField))
+        self.assertEqual(visible_fields[1].label, "Period 2")
         self.assertTrue(isinstance(visible_fields[1].field, forms.IntegerField))
-        self.assertEqual(visible_fields[2].label, "Period 2")
+        self.assertEqual(visible_fields[2].label, "Period 3")
         self.assertTrue(isinstance(visible_fields[2].field, forms.IntegerField))
-        self.assertEqual(visible_fields[3].label, "Period 3")
-        self.assertTrue(isinstance(visible_fields[3].field, forms.IntegerField))
 
         # Checks that the date field and the period fields are the only fields on the
         # form.
-        self.assertEqual(len(visible_fields), 4)
+        self.assertEqual(len(visible_fields), 3)
 
     def test_form_validation(self):
         """Tests that the form validates complete and incomplete data correctly."""
         # All data is specified correctly, so everything should be fine.
         form = FutureClassPeriodsForm(
-            data={"date": timezone.now(), "period_1": 1, "period_2": 0, "period_3": 1}
+            data={
+                "start_date": timezone.now(),
+                "period_1": 1,
+                "period_2": 0,
+                "period_3": 1,
+            }
         )
         self.assertTrue(form.is_valid())
 
         # One or more missing fields should generate an error.
-        form = FutureClassPeriodsForm(data={"date": timezone.now(), "period_1": 1})
+        form = FutureClassPeriodsForm(
+            data={"start_date": timezone.now(), "period_1": 1}
+        )
         self.assertFalse(form.is_valid())
 
         # One or more missing fields should generate an error.
+        form = FutureClassPeriodsForm(data={})
+        self.assertFalse(form.is_valid())
+
+        form = FutureClassPeriodsForm(data={"start_date": timezone.now()})
+        self.assertFalse(form.is_valid())
+
         form = FutureClassPeriodsForm(
             data={"period_1": 1, "period_2": 0, "period_3": 1}
         )
@@ -56,7 +65,12 @@ class TestFutureClassPeriodsForm(TestCase):
 
         # An integer value lower than zero should generate an error.
         form = FutureClassPeriodsForm(
-            data={"date": timezone.now(), "period_1": 1, "period_2": 0, "period_3": -1}
+            data={
+                "start_date": timezone.now(),
+                "period_1": 1,
+                "period_2": 0,
+                "period_3": -1,
+            }
         )
         self.assertFalse(form.is_valid())
 
@@ -92,7 +106,7 @@ class TestFutureClassPeriodsView(TestCase):
         response = self.client.post(
             reverse("future_class_periods_new"),
             {
-                "date": str(date),
+                "start_date": str(date),
                 "period_1": "10",
                 "period_2": "10",
                 "period_3": "10",
@@ -130,7 +144,6 @@ class TestFutureClassPeriodsView(TestCase):
         response = self.client.get(
             reverse("future_class_periods_existing", kwargs={"date": str(date)})
         )
-        self.assertContains(response, str(date))
         self.assertContains(response, "Period 1")
         self.assertContains(response, "Period 2")
         self.assertContains(response, "Period 3")
@@ -148,7 +161,7 @@ class TestFutureClassPeriodsView(TestCase):
                 kwargs={"date": str(date)},
             ),
             {
-                "date": str(date),
+                "start_date": str(date),
                 "period_1": "20",
                 "period_2": "21",
                 "period_3": "22",
@@ -216,7 +229,7 @@ class TestFutureClassPeriodsView(TestCase):
                 kwargs={"date": str(date)},
             ),
             {
-                "date": str(date),
+                "start_date": str(date),
                 "period_1": "1",
                 "period_2": "1",
                 "period_3": "1",
@@ -225,8 +238,16 @@ class TestFutureClassPeriodsView(TestCase):
 
         # Checks that the form is invalid because the number of signups for the existing
         # periods exceeds the new maximums.
-        self.assertContains(response, "Period 1 currently has 2 students", 1)
-        self.assertContains(response, "Period 2 currently has 2 students", 1)
+        self.assertContains(
+            response,
+            f"Period 1 on {date} currently has 2 students, which is greater than the new maximum of 1",
+            1,
+        )
+        self.assertContains(
+            response,
+            f"Period 2 on {date} currently has 2 students, which is greater than the new maximum of 1",
+            1,
+        )
 
         periods = ClassPeriod.objects.values_list("number", "max_student_count")
 
@@ -251,7 +272,7 @@ class TestFutureClassPeriodsView(TestCase):
                 kwargs={"date": str(date)},
             ),
             {
-                "date": str(date),
+                "start_date": str(date),
                 "period_1": "1",
                 "period_2": "1",
                 "period_3": "1",

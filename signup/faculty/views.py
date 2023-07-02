@@ -128,7 +128,7 @@ class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
         return initial
 
     def form_valid(self, form):
-        date = form.cleaned_data["date"]
+        date = form.cleaned_data["start_date"]
 
         new_periods = []
         existing_periods = form.existing_periods

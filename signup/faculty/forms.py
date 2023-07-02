@@ -2,15 +2,14 @@ from constance import config
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
+from django.db.models import Count
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from signup.models import ClassPeriodSignUp
 
 
-# See https://stackoverflow.com/a/22846522 for more info.
-class DateInput(forms.DateInput):
-    """Forces Django to render form using HTML5's date input field."""
-
-    input_type = "date"
+class HiddenDateInput(forms.DateInput):
+    input_type = "hidden"
 
 
 class FutureClassPeriodsForm(forms.Form):
@@ -22,8 +21,11 @@ class FutureClassPeriodsForm(forms.Form):
         initial = kwargs.get("initial", {})
         self.existing_periods = initial.get("existing_periods", {})
 
-        self.fields["date"] = forms.DateField(
-            label="Date", initial=initial.get("date"), widget=DateInput
+        self.fields["start_date"] = forms.DateField(
+            widget=HiddenDateInput, required=True
+        )
+        self.fields["end_date"] = forms.DateField(
+            widget=HiddenDateInput, required=False
         )
 
         for number in range(1, config.MAX_PERIOD_NUMBER + 1):
@@ -42,17 +44,44 @@ class FutureClassPeriodsForm(forms.Form):
         cleaned_data = super().clean()
         errors = []
 
-        for number in range(1, config.MAX_PERIOD_NUMBER):
-            if period := self.existing_periods.get(number):
-                new_max_student_count = cleaned_data[f"period_{number}"]
-                current_count = period.student_sign_ups.count()
+        start_date = cleaned_data.get("start_date")
 
-                if current_count > new_max_student_count:
-                    errors.append(
-                        ValidationError(
-                            f"Period {number} currently has {current_count} students, which is greater than the new maximum of {new_max_student_count}."
-                        )
+        if start_date is None:
+            errors.append("You need to enter a start date.")
+
+        for number in range(1, config.MAX_PERIOD_NUMBER):
+            if cleaned_data.get(f"period_{number}") is None:
+                errors.append(f"Period {number} is not filled out.")
+
+        if errors:
+            raise ValidationError(errors)
+
+        end_date = cleaned_data.get("end_date") or start_date
+
+        signups = (
+            ClassPeriodSignUp.objects.filter(
+                class_period__date__gte=start_date, class_period__date__lte=end_date
+            )
+            .values(
+                "class_period__date",
+                "class_period__number",
+                "class_period__max_student_count",
+            )
+            .annotate(period_count=Count("class_period__pk"))
+            .order_by("class_period__date", "class_period__number")
+        )
+
+        for signup in signups:
+            period_count = signup["period_count"]
+            class_period_number = signup["class_period__number"]
+            class_period_date = signup["class_period__date"]
+            new_max_student_count = cleaned_data[f"period_{class_period_number}"]
+            if period_count > new_max_student_count:
+                errors.append(
+                    ValidationError(
+                        f"Period {class_period_number} on {class_period_date} currently has {period_count} students, which is greater than the new maximum of {new_max_student_count}."
                     )
+                )
 
         if errors:
             raise ValidationError(errors)
