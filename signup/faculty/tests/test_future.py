@@ -142,7 +142,7 @@ class TestFutureClassPeriodsView(TestCase):
         # Checks that the form has generated fields according to the value of
         # MAX_PERIOD_NUMBER in the Constance settings.
         response = self.client.get(
-            reverse("future_class_periods_existing", kwargs={"date": str(date)})
+            reverse("future_class_periods_existing", kwargs={"start_date": str(date)})
         )
         self.assertContains(response, "Period 1")
         self.assertContains(response, "Period 2")
@@ -158,7 +158,7 @@ class TestFutureClassPeriodsView(TestCase):
         response = self.client.post(
             reverse(
                 "future_class_periods_existing",
-                kwargs={"date": str(date)},
+                kwargs={"start_date": str(date)},
             ),
             {
                 "start_date": str(date),
@@ -207,7 +207,9 @@ class TestFutureClassPeriodsView(TestCase):
         # Checks that the form has generated fields according to the value of
         # MAX_PERIOD_NUMBER in the Constance settings.
         response = self.client.get(
-            reverse("future_class_periods_existing", kwargs={"date": str(start_date)})
+            reverse(
+                "future_class_periods_existing", kwargs={"start_date": str(start_date)}
+            )
         )
         self.assertContains(response, "Period 1")
         self.assertContains(response, "Period 2")
@@ -223,7 +225,7 @@ class TestFutureClassPeriodsView(TestCase):
         response = self.client.post(
             reverse(
                 "future_class_periods_existing",
-                kwargs={"date": str(start_date)},
+                kwargs={"start_date": str(start_date)},
             ),
             {
                 "start_date": str(start_date),
@@ -302,7 +304,7 @@ class TestFutureClassPeriodsView(TestCase):
         response = self.client.post(
             reverse(
                 "future_class_periods_existing",
-                kwargs={"date": str(date)},
+                kwargs={"start_date": str(date)},
             ),
             {
                 "start_date": str(date),
@@ -345,7 +347,7 @@ class TestFutureClassPeriodsView(TestCase):
         response = self.client.post(
             reverse(
                 "future_class_periods_existing",
-                kwargs={"date": str(date)},
+                kwargs={"start_date": str(date)},
             ),
             {
                 "start_date": str(date),
@@ -419,7 +421,7 @@ class TestFutureClassPeriodsView(TestCase):
         response = self.client.post(
             reverse(
                 "future_class_periods_existing",
-                kwargs={"date": str(start_date)},
+                kwargs={"start_date": str(start_date)},
             ),
             {
                 "start_date": str(start_date),
@@ -463,7 +465,7 @@ class TestFutureClassPeriodsView(TestCase):
         response = self.client.post(
             reverse(
                 "future_class_periods_existing",
-                kwargs={"date": str(start_date)},
+                kwargs={"start_date": str(start_date)},
             ),
             {
                 "start_date": str(start_date),

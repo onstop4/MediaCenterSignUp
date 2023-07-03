@@ -39,7 +39,7 @@ urlpatterns = [
         name="future_class_periods_new",
     ),
     path(
-        "periods/<date>/",
+        "periods/<start_date>/",
         FutureClassPeriodsFormView.as_view(),
         name="future_class_periods_existing",
     ),

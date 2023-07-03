@@ -112,14 +112,13 @@ class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
     def get_initial(self):
         existing_periods = {}
         initial = {"existing_periods": existing_periods}
-        date = self.kwargs.get("date")
+        start_date = self.kwargs.get("start_date")
 
-        if date:
-            initial["date"] = date
+        if start_date:
             # If date is specified in URL, initialize form with max student counts
             # associated with that date (assuming that the form was already filled out
             # for that date).
-            periods = ClassPeriod.objects.filter(date=date)
+            periods = ClassPeriod.objects.filter(date=start_date)
 
             # If the form was already filled out for a specific date, use the existing
             # values as the form's initial values. Otherwise, the form will use its

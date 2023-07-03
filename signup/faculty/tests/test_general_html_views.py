@@ -33,7 +33,7 @@ class TestBasicFacultyViewsAuth(TestCase):
         now = timezone.now()
         ClassPeriod.objects.create(date=now, number=1, max_student_count=10)
         response = self.client.get(
-            reverse("future_class_periods_existing", kwargs={"date": str(now)})
+            reverse("future_class_periods_existing", kwargs={"start_date": str(now)})
         )
         self.assertEqual(response.status_code, 403)
 
