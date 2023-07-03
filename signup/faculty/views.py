@@ -1,9 +1,11 @@
+from datetime import timedelta
 from itertools import groupby, islice
 
 from constance import config
 from django.conf import settings
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db import transaction
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import FormView, ListView, RedirectView, TemplateView
@@ -128,29 +130,38 @@ class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
         return initial
 
     def form_valid(self, form):
-        date = form.cleaned_data["start_date"]
+        start_date = form.cleaned_data["start_date"]
+        end_date = form.cleaned_data["end_date"]
 
-        new_periods = []
-        existing_periods = form.existing_periods
+        all_existing_periods = ClassPeriod.objects.filter(
+            date__gte=start_date, date__lte=end_date
+        )
 
-        for number in range(1, config.MAX_PERIOD_NUMBER + 1):
-            if period := existing_periods.get(number):
-                period.max_student_count = form.cleaned_data[f"period_{number}"]
-            else:
-                new_periods.append(
-                    ClassPeriod(
-                        date=date,
-                        number=number,
-                        max_student_count=form.cleaned_data[f"period_{number}"],
-                    )
+        number_range = range(1, config.MAX_PERIOD_NUMBER + 1)
+
+        with transaction.atomic():
+            for number in number_range:
+                # Should be replaced with a call to Django 4.1's bulk_create(), which
+                # can accomplish this without needing to also call update().
+                all_existing_periods.filter(number=number).update(
+                    max_student_count=form.cleaned_data[f"period_{number}"]
                 )
 
-        if new_periods:
-            ClassPeriod.objects.bulk_create(new_periods)
-        if existing_periods:
-            ClassPeriod.objects.bulk_update(
-                existing_periods.values(), ["max_student_count"]
+            date_range = (
+                start_date + timedelta(days=x)
+                for x in range((end_date - start_date).days + 1)
             )
+            to_create = (
+                ClassPeriod(
+                    date=date,
+                    number=number,
+                    max_student_count=form.cleaned_data[f"period_{number}"],
+                )
+                for date in date_range
+                for number in number_range
+            )
+
+            ClassPeriod.objects.bulk_create(to_create, ignore_conflicts=True)
 
         return super().form_valid(form)
 

@@ -56,7 +56,7 @@ class FutureClassPeriodsForm(forms.Form):
         if errors:
             raise ValidationError(errors)
 
-        end_date = cleaned_data.get("end_date") or start_date
+        end_date = cleaned_data["end_date"] = cleaned_data.get("end_date") or start_date
 
         signups = (
             ClassPeriodSignUp.objects.filter(

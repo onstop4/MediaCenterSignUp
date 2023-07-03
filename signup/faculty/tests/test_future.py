@@ -180,9 +180,85 @@ class TestFutureClassPeriodsView(TestCase):
         self.assertEqual(periods[1].max_student_count, 21)
         self.assertEqual(periods[2].max_student_count, 22)
 
+    def test_form_existing_future_periods_over_range(self):
+        """Tests getting the form for an existing set of ClassPeriods. Also tests
+        submitting the form, thereby updating the existing set of ClassPeriods and
+        creating some new ones."""
+        start_date = timezone.now().date() + timedelta(days=3)
+        end_date = start_date + timedelta(days=2)
+
+        ClassPeriod.objects.bulk_create(
+            [
+                ClassPeriod(date=start_date, number=1, max_student_count=10),
+                ClassPeriod(date=start_date, number=2, max_student_count=11),
+                ClassPeriod(date=start_date, number=3, max_student_count=12),
+                ClassPeriod(
+                    date=start_date + timedelta(days=1), number=1, max_student_count=10
+                ),
+                ClassPeriod(
+                    date=start_date + timedelta(days=1), number=2, max_student_count=11
+                ),
+                ClassPeriod(
+                    date=start_date + timedelta(days=1), number=3, max_student_count=12
+                ),
+            ]
+        )
+
+        # Checks that the form has generated fields according to the value of
+        # MAX_PERIOD_NUMBER in the Constance settings.
+        response = self.client.get(
+            reverse("future_class_periods_existing", kwargs={"date": str(start_date)})
+        )
+        self.assertContains(response, "Period 1")
+        self.assertContains(response, "Period 2")
+        self.assertContains(response, "Period 3")
+        self.assertNotContains(response, "Period 4")
+
+        # Checks that the form's initial values are the existing values in the database.
+        self.assertContains(response, "10")
+        self.assertContains(response, "11")
+        self.assertContains(response, "12")
+
+        # Checks that the form is submitted without any errors.
+        response = self.client.post(
+            reverse(
+                "future_class_periods_existing",
+                kwargs={"date": str(start_date)},
+            ),
+            {
+                "start_date": str(start_date),
+                "end_date": str(end_date),
+                "period_1": "20",
+                "period_2": "21",
+                "period_3": "22",
+            },
+        )
+        self.assertRedirects(response, reverse("future_class_periods_list"))
+
+        # Checks that the there are nine ClassPeriods: six existing ones and three new
+        # ones.
+        periods = ClassPeriod.objects.order_by("date", "number").values_list(
+            "date", "number", "max_student_count"
+        )
+
+        self.assertEqual(periods.count(), 9)
+
+        # Checks that the new ClassPeriods has been created and the old ones have been
+        # updated.
+        self.assertEqual(periods[0], (start_date, 1, 20))
+        self.assertEqual(periods[1], (start_date, 2, 21))
+        self.assertEqual(periods[2], (start_date, 3, 22))
+        self.assertEqual(periods[3], (start_date + timedelta(days=1), 1, 20))
+        self.assertEqual(periods[4], (start_date + timedelta(days=1), 2, 21))
+        self.assertEqual(periods[5], (start_date + timedelta(days=1), 3, 22))
+        self.assertEqual(periods[6], (end_date, 1, 20))
+        self.assertEqual(periods[7], (end_date, 2, 21))
+        self.assertEqual(periods[8], (end_date, 3, 22))
+
     def test_future_periods_with_existing_signups(self):
         """Tests submitting the form when the number of signups exceed the new maximum
-        student count for a certain set of periods."""
+        student count for a certain set of periods. Also tests that the form submits
+        successfully if the number of signups does not exceed the new maximum."""
         # Uses a date 3 days into the future.
         datetime = timezone.now() + timedelta(days=3)
         date = datetime.date()
@@ -289,3 +365,130 @@ class TestFutureClassPeriodsView(TestCase):
         self.assertTupleEqual(periods[0], (1, 1))
         self.assertTupleEqual(periods[1], (2, 1))
         self.assertTupleEqual(periods[2], (3, 1))
+
+    def test_future_periods_with_existing_signups_over_range(self):
+        """Tests submitting the form when the number of signups exceed the new maximum
+        student count for a certain set of periods over a certain date range. Also tests
+        that the form submits successfully if the number of signups does not exceed the
+        new maximum."""
+        # Uses a date 3 days into the future.
+        datetime = timezone.now() + timedelta(days=3)
+        start_date = datetime.date()
+        end_date = start_date + timedelta(days=2)
+        student1 = Student.objects.create_user(email="student1@myhchs.org")
+        student2 = Student.objects.create_user(email="student2@myhchs.org")
+
+        period1 = ClassPeriod.objects.create(
+            date=start_date, number=1, max_student_count=2
+        )
+        period2 = ClassPeriod.objects.create(
+            date=start_date, number=2, max_student_count=2
+        )
+
+        # There are now 4 signups, two for each period.
+        ClassPeriodSignUp.objects.bulk_create(
+            [
+                ClassPeriodSignUp(
+                    student=student1,
+                    class_period=period1,
+                    date_signed_up=datetime,
+                    reason=ClassPeriodSignUp.STUDY_HALL,
+                ),
+                ClassPeriodSignUp(
+                    student=student2,
+                    class_period=period1,
+                    date_signed_up=datetime,
+                    reason=ClassPeriodSignUp.STUDY_HALL,
+                ),
+                ClassPeriodSignUp(
+                    student=student1,
+                    class_period=period2,
+                    date_signed_up=datetime,
+                    reason=ClassPeriodSignUp.STUDY_HALL,
+                ),
+                ClassPeriodSignUp(
+                    student=student2,
+                    class_period=period2,
+                    date_signed_up=datetime,
+                    reason=ClassPeriodSignUp.STUDY_HALL,
+                ),
+            ]
+        )
+
+        # Attempts to lower the max of the existing periods and create six new periods.
+        response = self.client.post(
+            reverse(
+                "future_class_periods_existing",
+                kwargs={"date": str(start_date)},
+            ),
+            {
+                "start_date": str(start_date),
+                "end_date": str(end_date),
+                "period_1": "1",
+                "period_2": "1",
+                "period_3": "1",
+            },
+        )
+
+        # Checks that the form is invalid because the number of signups for the existing
+        # periods exceeds the new maximums.
+        self.assertContains(
+            response,
+            f"Period 1 on {start_date} currently has 2 students, which is greater than the new maximum of 1",
+            1,
+        )
+        self.assertContains(
+            response,
+            f"Period 2 on {start_date} currently has 2 students, which is greater than the new maximum of 1",
+            1,
+        )
+
+        periods = ClassPeriod.objects.values_list("number", "max_student_count")
+
+        # Checks that the existing periods remain the same and the new ones has not been
+        # created.
+        self.assertEqual(periods.count(), 2)
+        self.assertTupleEqual(periods[0], (1, 2))
+        self.assertTupleEqual(periods[1], (2, 2))
+
+        # Checks that the signups remain the same.
+        signups = ClassPeriodSignUp.objects.all()
+        self.assertEqual(signups.count(), 4)
+
+        # Deletes one signup from each period, so everything should be fine after this
+        # point.
+        signups.filter(class_period__number=1).first().delete()
+        signups.filter(class_period__number=2).first().delete()
+
+        response = self.client.post(
+            reverse(
+                "future_class_periods_existing",
+                kwargs={"date": str(start_date)},
+            ),
+            {
+                "start_date": str(start_date),
+                "end_date": str(end_date),
+                "period_1": "1",
+                "period_2": "1",
+                "period_3": "1",
+            },
+        )
+
+        self.assertRedirects(response, reverse("future_class_periods_list"))
+
+        periods = ClassPeriod.objects.order_by("date", "number").values_list(
+            "date", "number", "max_student_count"
+        )
+
+        # Checks that the there are nine ClassPeriods: three existing ones and six new
+        # ones.
+        self.assertEqual(periods.count(), 9)
+        self.assertTupleEqual(periods[0], (start_date, 1, 1))
+        self.assertTupleEqual(periods[1], (start_date, 2, 1))
+        self.assertTupleEqual(periods[2], (start_date, 3, 1))
+        self.assertTupleEqual(periods[3], (start_date + timedelta(days=1), 1, 1))
+        self.assertTupleEqual(periods[4], (start_date + timedelta(days=1), 2, 1))
+        self.assertTupleEqual(periods[5], (start_date + timedelta(days=1), 3, 1))
+        self.assertTupleEqual(periods[6], (end_date, 1, 1))
+        self.assertTupleEqual(periods[7], (end_date, 2, 1))
+        self.assertTupleEqual(periods[8], (end_date, 3, 1))
