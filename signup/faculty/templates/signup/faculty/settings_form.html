@@ -11,5 +11,9 @@
 <div class="alert {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}alert-success{% else %}alert-primary{% endif %}"" role=" alert">{{ message }}</div>
 {% endfor %}
 
-{% crispy form %}
+<form method="post">
+    {% csrf_token %}
+    {{ form | crispy }}
+    <input type="submit" class="btn btn-primary" value="Submit">
+</form>
 {% endblock content %}

@@ -2,14 +2,21 @@ from constance import config
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
-from django.db.models import Count
 from django.core.exceptions import ValidationError
+from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
+
 from signup.models import ClassPeriodSignUp
 
 
-class HiddenDateInput(forms.DateInput):
+# Taken from https://stackoverflow.com/a/59893460.
+class HiddenInput(forms.Widget):
     input_type = "hidden"
+
+    template_name = ""
+
+    def render(self, name, value, attrs=None, renderer=None):
+        return ""
 
 
 class FutureClassPeriodsForm(forms.Form):
@@ -21,12 +28,8 @@ class FutureClassPeriodsForm(forms.Form):
         initial = kwargs.get("initial", {})
         self.existing_periods = initial.get("existing_periods", {})
 
-        self.fields["start_date"] = forms.DateField(
-            widget=HiddenDateInput, required=True
-        )
-        self.fields["end_date"] = forms.DateField(
-            widget=HiddenDateInput, required=False
-        )
+        self.fields["start_date"] = forms.DateField(widget=HiddenInput, required=True)
+        self.fields["end_date"] = forms.DateField(widget=HiddenInput, required=False)
 
         for number in range(1, config.MAX_PERIOD_NUMBER + 1):
             period = self.existing_periods.get(number)
@@ -38,8 +41,6 @@ class FutureClassPeriodsForm(forms.Form):
                 initial=period.max_student_count if period else 0,
             )
 
-        self.helper.add_input(Submit("submit", "Submit"))
-
     def clean(self):
         cleaned_data = super().clean()
         errors = []
@@ -47,7 +48,7 @@ class FutureClassPeriodsForm(forms.Form):
         start_date = cleaned_data.get("start_date")
 
         if start_date is None:
-            errors.append("You need to enter a start date.")
+            errors.append("You must enter a start date.")
 
         for number in range(1, config.MAX_PERIOD_NUMBER):
             if cleaned_data.get(f"period_{number}") is None:
@@ -96,13 +97,6 @@ class SettingsForm(forms.Form):
     )
     lunch_periods_start = forms.IntegerField(label=_("First lunch period"))
     lunch_periods_end = forms.IntegerField(label=_("Last lunch period"))
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.template_pack = "bootstrap5"
-
-        self.helper.add_input(Submit("submit", "Submit"))
 
     def clean(self):
         cleaned_data = super().clean()

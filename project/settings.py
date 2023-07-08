@@ -202,8 +202,7 @@ CONSTANCE_CONFIG = {
     ),
 }
 
-CRISPY_TEMPLATE_PACK = "bootstrap4"
-CRISPY_ALLOWED_TEMPLATE_PACKS = ("bootstrap4", "bootstrap5")
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Celery-related .env variables only need to be set if CELERY_ENABLED is True.
 if CELERY_ENABLED:
@@ -277,7 +276,7 @@ LOGGING = {
     },
 }
 
-DEFAULT_FROM_EMAIL = config('FROM_EMAIL_ADDRESS')
+DEFAULT_FROM_EMAIL = config("FROM_EMAIL_ADDRESS")
 
 # pylint: disable=wildcard-import, unused-wildcard-import
 if DEBUG:

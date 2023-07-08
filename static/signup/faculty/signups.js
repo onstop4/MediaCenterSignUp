@@ -9,12 +9,10 @@ function getCookie(name) {
 
 // Taken from https://stackoverflow.com/a/29774197.
 function getDateFormatted(date) {
-
     const offset = date.getTimezoneOffset()
     date = new Date(date.getTime() - (offset * 60 * 1000))
     return date.toISOString().split('T')[0]
 }
-
 
 axiosSettings = { headers: { "X-CSRFToken": getCookie('csrftoken') } }
 
@@ -149,7 +147,8 @@ createApp({
                 selectAllCheckbox.indeterminate = false
             }).catch(() => { this.errorOccurred = true })
         }
-    }, computed: {
+    },
+    computed: {
         stringDateFilter: {
             get() {
                 return getDateFormatted(this.filterInputs.date)

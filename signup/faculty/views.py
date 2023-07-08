@@ -109,12 +109,31 @@ class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
     form_class = FutureClassPeriodsForm
     success_url = reverse_lazy("future_class_periods_list")
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        today = timezone.now()
+
+        form = context["form"]
+        if hasattr(form, "cleaned_data"):
+            cleaned_data = form.cleaned_data
+
+            start_date = cleaned_data.get("start_date", today)
+            end_date = cleaned_data.get("end_date", start_date)
+        else:
+            start_date = end_date = self.kwargs.get("start_date", today)
+
+        context |= {
+            "DEBUG": settings.DEBUG,
+            "script_data": {"start_date": start_date, "end_date": end_date},
+        }
+
+        return context
+
     def get_initial(self):
         existing_periods = {}
         initial = {"existing_periods": existing_periods}
-        start_date = self.kwargs.get("start_date")
 
-        if start_date:
+        if start_date := self.kwargs.get("start_date"):
             # If date is specified in URL, initialize form with max student counts
             # associated with that date (assuming that the form was already filled out
             # for that date).
