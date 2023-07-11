@@ -49,15 +49,20 @@ class FutureClassPeriodsForm(forms.Form):
 
         if start_date is None:
             errors.append("You must enter a start date.")
+        else:
+            end_date = cleaned_data["end_date"] = (
+                cleaned_data.get("end_date") or start_date
+            )
+
+            if end_date < start_date:
+                errors.append("Start date must come before end date.")
 
         for number in range(1, config.MAX_PERIOD_NUMBER):
             if cleaned_data.get(f"period_{number}") is None:
-                errors.append(f"Period {number} is not filled out.")
+                errors.append(f"The input for period {number} is invalid.")
 
         if errors:
             raise ValidationError(errors)
-
-        end_date = cleaned_data["end_date"] = cleaned_data.get("end_date") or start_date
 
         signups = (
             ClassPeriodSignUp.objects.filter(

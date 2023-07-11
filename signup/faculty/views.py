@@ -117,8 +117,8 @@ class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
         if hasattr(form, "cleaned_data"):
             cleaned_data = form.cleaned_data
 
-            start_date = cleaned_data.get("start_date", today)
-            end_date = cleaned_data.get("end_date", start_date)
+            start_date = cleaned_data.get("start_date") or today
+            end_date = cleaned_data.get("end_date") or start_date
         else:
             start_date = end_date = self.kwargs.get("start_date", today)
 

@@ -1,9 +1,10 @@
 const { createApp } = Vue
 
-// Taken from https://stackoverflow.com/a/29774197.
+function getDateFromScriptData(s) {
+    return new Date(s.includes("T") ? s : s + "T00:00:00")
+}
+
 function getDateFormatted(date) {
-    const offset = date.getTimezoneOffset()
-    date = new Date(date.getTime() - (offset * 60 * 1000))
     return date.toISOString().split('T')[0]
 }
 
@@ -11,7 +12,7 @@ scriptData = JSON.parse(document.getElementById('script_data').textContent)
 
 createApp({
     data() {
-        return { startDate: new Date(scriptData.start_date), endDate: new Date(scriptData.end_date), overRange: scriptData.start_date != scriptData.end_date }
+        return { startDate: getDateFromScriptData(scriptData.start_date), endDate: getDateFromScriptData(scriptData.end_date), overRange: scriptData.start_date != scriptData.end_date }
     },
     computed: {
         startDateValue: {
