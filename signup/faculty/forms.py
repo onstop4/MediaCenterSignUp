@@ -2,6 +2,7 @@ from constance import config
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
@@ -56,6 +57,10 @@ class FutureClassPeriodsForm(forms.Form):
 
             if end_date < start_date:
                 errors.append("Start date must come before end date.")
+            elif (end_date - start_date).days > settings.MAX_DATE_RANGE_DAYS:
+                errors.append(
+                    f"The number of days between the start and end dates must not exceed {settings.MAX_DATE_RANGE_DAYS}."
+                )
 
         for number in range(1, config.MAX_PERIOD_NUMBER):
             if cleaned_data.get(f"period_{number}") is None:

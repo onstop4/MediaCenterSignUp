@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from constance.test import override_config
 from django import forms
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -10,6 +10,7 @@ from signup.faculty.forms import FutureClassPeriodsForm
 from signup.models import ClassPeriod, ClassPeriodSignUp, LibraryFacultyMember, Student
 
 
+@override_settings(MAX_DATE_RANGE_DAYS=10)
 @override_config(MAX_PERIOD_NUMBER=3)
 class TestFutureClassPeriodsForm(TestCase):
     """Performs tests on :class:`signup.faculty.forms.FutureClassPeriodsForm`."""
@@ -67,6 +68,31 @@ class TestFutureClassPeriodsForm(TestCase):
         form = FutureClassPeriodsForm(
             data={
                 "start_date": timezone.now(),
+                "period_1": 1,
+                "period_2": 0,
+                "period_3": -1,
+            }
+        )
+        self.assertFalse(form.is_valid())
+
+        # An end_date that comes before the start_date should generate an error.
+        form = FutureClassPeriodsForm(
+            data={
+                "start_date": timezone.now(),
+                "end_date": timezone.now() - timedelta(days=3),
+                "period_1": 1,
+                "period_2": 0,
+                "period_3": -1,
+            }
+        )
+        self.assertFalse(form.is_valid())
+
+        # If the number of days between the start date and end date exceeds the limit,
+        # then an error should be generated.
+        form = FutureClassPeriodsForm(
+            data={
+                "start_date": timezone.now(),
+                "end_date": timezone.now() + timedelta(days=20),
                 "period_1": 1,
                 "period_2": 0,
                 "period_3": -1,

@@ -278,6 +278,8 @@ LOGGING = {
 
 DEFAULT_FROM_EMAIL = config("FROM_EMAIL_ADDRESS")
 
+MAX_DATE_RANGE_DAYS = 100
+
 # pylint: disable=wildcard-import, unused-wildcard-import
 if DEBUG:
     # Use settings specifically meant for development if DEBUG is True.
