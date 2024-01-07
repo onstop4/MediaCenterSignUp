@@ -3,15 +3,9 @@
 {% block title %}Success{% endblock title %}
 
 {% block content %}
-<style>
-    ul {
-        list-style-type: none;
-    }
-</style>
-
 {% if periods %}
 <p>You have successfully signed up to use the Media Center during the following class periods:</p>
-<ul>
+<ul class="list-of-periods">
     {% for period in periods %}
     <li>Period {{ period.number }}</li>
     {% endfor %}

@@ -1,3 +1,7 @@
 .bg-lightgreen {
     background-color: darkseagreen;
 }
+
+ul.list-of-periods {
+    list-style-type: none;
+}
