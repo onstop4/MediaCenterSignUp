@@ -24,7 +24,6 @@ class FutureClassPeriodsForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.template_pack = "bootstrap5"
 
         initial = kwargs.get("initial", {})
         self.existing_periods = initial.get("existing_periods", {})

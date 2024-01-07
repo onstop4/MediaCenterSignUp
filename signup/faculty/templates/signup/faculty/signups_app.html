@@ -8,9 +8,9 @@
 <link rel="stylesheet" href="{% static 'signup/faculty/style.css' %}">
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 {% if DEBUG %}
-<script src="https://unpkg.com/vue@3.2"></script>
+<script src="https://unpkg.com/vue@3"></script>
 {% else %}
-<script src="https://unpkg.com/vue@3.2/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 {% endif %}
 
 {{ script_data|json_script:"script_data" }}

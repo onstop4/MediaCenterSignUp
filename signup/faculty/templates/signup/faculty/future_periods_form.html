@@ -7,9 +7,9 @@
 {% block resources %}
 {{ block.super }}
 {% if DEBUG %}
-<script src="https://unpkg.com/vue@3.2"></script>
+<script src="https://unpkg.com/vue@3"></script>
 {% else %}
-<script src="https://unpkg.com/vue@3.2/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 {% endif %}
 
 {{ script_data|json_script:"script_data" }}
