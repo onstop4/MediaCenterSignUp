@@ -159,8 +159,6 @@ class FutureClassPeriodsFormView(UserIsLibraryFacultyMemberMixin, FormView):
 
         with transaction.atomic():
             for number in number_range:
-                # Should be replaced with a call to Django 4.1's bulk_create(), which
-                # can accomplish this without needing to also call update().
                 all_existing_periods.filter(number=number).update(
                     max_student_count=form.cleaned_data[f"period_{number}"]
                 )
