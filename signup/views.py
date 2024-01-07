@@ -37,7 +37,7 @@ def google_callback(request):
     if user:
         login(request, user)
         return redirect("student_sign_up_form")
-    return render(request, "signup/login_failed.html", {})
+    return redirect("login_failure")
 
 
 def robots_txt(request):
@@ -61,6 +61,10 @@ class UserNeedsLoginMixin(LoginRequiredMixin):
             return redirect(reverse("faculty_index"))
 
         return super().dispatch(request, *args, **kwargs)
+
+
+class LoginFailureView(TemplateView):
+    template_name = "signup/login_failed.html"
 
 
 class StudentNeedsInfoMixin(UserNeedsLoginMixin):
