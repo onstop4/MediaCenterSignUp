@@ -1,12 +1,6 @@
 {% extends "signup/faculty/components/base.html" %}
-{% load static %}
 
 {% block title %}Class Periods in the {% if future %}Future{% else %}Past{% endif %}{% endblock title %}
-
-{% block resources %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static 'signup/faculty/style.css' %}">
-{% endblock resources %}
 
 {% block content %}
 <h1>Class Periods {% if future %}Today and in the Future{% else %}in the Past{% endif %}</h1>

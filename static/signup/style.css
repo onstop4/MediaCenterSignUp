@@ -5,3 +5,18 @@
 ul.list-of-periods {
     list-style-type: none;
 }
+
+input:not([type="button"], [type="submit"]),
+.form-select {
+    border: 2px solid var(--bs-gray-700) !important;
+}
+
+.table td.fit,
+.table th.fit {
+    white-space: nowrap;
+    width: 1%;
+}
+
+td {
+    vertical-align: middle;
+}
