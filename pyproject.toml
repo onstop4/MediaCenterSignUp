@@ -6,24 +6,24 @@ authors = ["Andrew Henkel <search1230@gmail.com>"]
 package-mode = false
 
 [tool.poetry.dependencies]
-python = ">=3.10.*, <3.11.*"
-Django = "~4.2.9"
-django-crispy-forms = "~2.3"
-python-decouple = "^3.8"
-djangorestframework = "~3.15.1"
+python = "3.13.*, <3.14.*"
+Django = "~5.2.0"
+django-crispy-forms = "~2.4"
+python-decouple = "~3.8"
+djangorestframework = "~3.16.0"
 requests-oauthlib = "~2.0.0"
-django-filter = "~24.3"
-django-constance = {version = "~3.1.0", extras = ["database"]}
-crispy-bootstrap5 = "2023.10"
-openpyxl = "~3.1.2"
-lxml = "^5.1.0"
-mysqlclient = "~2.2.1"
+django-filter = "~25.1"
+django-constance = "~4.3.2"
+crispy-bootstrap5 = "2025.4"
+openpyxl = "~3.1.5"
+lxml = "~5.4.0"
+mysqlclient = "~2.2.7"
 
-[tool.poetry.dev-dependencies]
-pylint = "^3.0.3"
-pylint-django = "^2.5.3"
-black = "^24.3.0"
-isort = "^5.13.2"
+[tool.poetry.group.dev.dependencies]
+pylint = "~3.3"
+pylint-django = "~2.6"
+black = "~25.1"
+isort = "~6.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -31,3 +31,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.isort]
 profile = "black"
+
+[tool.poetry.requires-plugins]
+poetry-plugin-export = ">=1.8"

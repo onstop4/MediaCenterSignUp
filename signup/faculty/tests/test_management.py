@@ -65,10 +65,10 @@ class TestDeleteOldClassPeriods(TestCase):
             call_command("deleteoldclassperiods", 7, 1)
 
         periods = ClassPeriod.objects.all()
-        self.assertQuerysetEqual(periods, [self.period2, self.period3], ordered=False)
+        self.assertQuerySetEqual(periods, [self.period2, self.period3], ordered=False)
 
         signups = ClassPeriodSignUp.objects.all()
-        self.assertQuerysetEqual(signups, [self.signup2, self.signup3], ordered=False)
+        self.assertQuerySetEqual(signups, [self.signup2, self.signup3], ordered=False)
 
     def test_delete_old_class_periods_from_last_school_year(self):
         """Tests deleting ClassPeriods from previous school years (including ones that
@@ -82,7 +82,7 @@ class TestDeleteOldClassPeriods(TestCase):
             call_command("deleteoldclassperiods", 7, 1)
 
         periods = ClassPeriod.objects.all()
-        self.assertQuerysetEqual(periods, [self.period3])
+        self.assertQuerySetEqual(periods, [self.period3])
 
         signups = ClassPeriodSignUp.objects.all()
-        self.assertQuerysetEqual(signups, [self.signup3])
+        self.assertQuerySetEqual(signups, [self.signup3])

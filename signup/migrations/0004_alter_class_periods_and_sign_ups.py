@@ -3,7 +3,6 @@
 import datetime
 from django.db import migrations, models
 import django.db.models.deletion
-from django.utils.timezone import utc
 
 
 class Migration(migrations.Migration):
@@ -20,7 +19,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='classperiod',
             name='date',
-            field=models.DateField(default=datetime.datetime(2022, 7, 11, 17, 59, 37, 256138, tzinfo=utc), verbose_name='date'),
+            field=models.DateField(default=datetime.datetime(2022, 7, 11, 17, 59, 37, 256138, tzinfo=datetime.UTC), verbose_name='date'),
             preserve_default=False,
         ),
         migrations.AddField(
